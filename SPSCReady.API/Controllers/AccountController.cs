@@ -34,5 +34,22 @@ namespace SPSCReady.API.Controllers
             // Return the specific Identity errors (e.g., to display in your Flutter UI)
             return BadRequest(new { message = "Registration failed", errors });
         }
+        [HttpPost("login")] // Routes to /api/account/login
+        public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var response = await _accountService.LoginAsync(request);
+
+            if (response.IsSuccessful)
+            {
+                return Ok(response); // Returns the token to Flutter
+            }
+
+            return Unauthorized(new { message = response.Message });
+        }
     }
 }
