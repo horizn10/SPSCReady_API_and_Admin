@@ -29,7 +29,7 @@ COMMIT;
 
 -- 6. ExamPaper (FK to Cycle, Stage, Subject)
 INSERT INTO ExamPapers (Id, ExamCycleId, ExamStageId, SubjectId, Title, PdfUrl, UploadedAt) VALUES 
-('11111111-2222-3333-4444-555555555555', 'd1e2f3a4-b5c6-d7e8-f9a0-b1c2d3e4f5a6', '44444444-4444-4444-4444-444444444444', '77777777-7777-7777-7777-777777777777', 'SI Prelims 2024 GK Test Paper', '/pdfs/si-prelims-2024.pdf', GETDATE());
+('11111111-2222-3333-4444-555555555555', 'd1e2f3a4-b5c6-d7e8-f9a0-b1c2d3e4f5a6', '44444444-4444-4444-4444-444444444444', '77777777-7777-7777-7777-777777777777', 'SI Prelims 2024 GK Test Paper', '/pdfs/SI_Police_Prelims_Paper_I.pdf', GETDATE());
 
 COMMIT;
 
