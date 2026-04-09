@@ -1,0 +1,68 @@
+﻿@model SPSCAdmin.Web.Models.UploadPaperViewModel
+@{
+    ViewData["Title"] = "Upload Paper";
+}
+
+<div class="container mt-5" style="max-width: 700px;">
+    <div class="card shadow border-0">
+        <div class="card-header text-white py-3" style="background-color: #1e3a8a;">
+            <h5 class="mb-0 fw-bold">Upload Question Paper</h5>
+        </div>
+        <div class="card-body p-4 bg-light">
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+                </div>
+            }
+
+            <form asp-action="Index" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Paper Title</label>
+                    <input asp-for="Title" class="form-control" placeholder="e.g., General Studies 2024" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Exam Cycle ID (Guid)</label>
+                        <input asp-for="ExamCycleId" class="form-control" placeholder="Paste GUID from Database" />
+                        <span asp-validation-for="ExamCycleId" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Exam Stage ID (Guid)</label>
+                        <input asp-for="ExamStageId" class="form-control" placeholder="Paste GUID from Database" />
+                        <span asp-validation-for="ExamStageId" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Subject ID (Guid)</label>
+                    <input asp-for="SubjectId" class="form-control" placeholder="Paste GUID from Database" />
+                    <span asp-validation-for="SubjectId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Upload PDF</label>
+                    <input asp-for="PdfFile" type="file" class="form-control" accept="application/pdf" />
+                    <span asp-validation-for="PdfFile" class="text-danger"></span>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn text-white fw-bold py-2" style="background-color: #10b981;">
+                        Securely Upload to API
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

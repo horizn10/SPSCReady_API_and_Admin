@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+<ProjectReference Include="..\SPSCReady.Domain\SPSCReady.Domain.csproj" />
     <ProjectReference Include="..\SPSCReady.Application\SPSCReady.Application.csproj" />
   </ItemGroup>
 

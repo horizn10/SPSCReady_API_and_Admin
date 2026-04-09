@@ -85,7 +85,18 @@ builder.Services.AddAuthentication(options =>
 });
 
 // 4. Register your Application Services
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IPaperService, PaperService>();
 
 var app = builder.Build();
 
@@ -98,10 +109,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseStaticFiles();
+
 // Add Authentication middleware BEFORE Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseCors("AllowAll");
 app.MapControllers();
 
 app.Run();

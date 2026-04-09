@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="SPSCAdmin.web/SPSCAdmin.web.csproj" Id="14d5ec8d-1b92-4a86-a245-3a214a933631" />
   <Project Path="SPSCReady.API/SPSCReady.API.csproj" />
   <Project Path="SPSCReady.Application/SPSCReady.Application.csproj" Id="58d45a6f-aad0-457a-98d5-8a0ffc091d16" />
   <Project Path="SPSCReady.Domain/SPSCReady.Domain.csproj" Id="e9960b6e-7688-4418-bc13-3e7040cedfa1" />
