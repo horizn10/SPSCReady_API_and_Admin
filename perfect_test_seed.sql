@@ -11,7 +11,7 @@ DELETE FROM Subjects;
 DELETE FROM Departments;
 
 -- 1. Department
-INSERT INTO Departments (Id, Name) VALUES ('11111111-1111-1111-1111-111111111111', 'Sindh Police');
+INSERT INTO Departments (Id, Name) VALUES ('11111111-1111-1111-1111-111111111111', 'Police Department');
 
 -- 2. Post (FK to Department)
 INSERT INTO Posts (Id, DepartmentId, Name) VALUES ('a1b2c3d4-e5f6-7890-abcd-ef1234567890', '11111111-1111-1111-1111-111111111111', 'Sub Inspector (SI)');
@@ -47,3 +47,5 @@ JOIN ExamCycles ec ON p.ExamCycleId = ec.Id
 JOIN Posts po ON ec.PostId = po.Id
 JOIN Departments d ON po.DepartmentId = d.Id
 JOIN ExamStages es ON p.ExamStageId = es.Id
+JOIN Subjects s ON p.SubjectId = s.Id
+WHERE p.PdfUrl IS NOT NULL

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SPSCReady.Application.DTOs;
 using SPSCReady.Application.Interfaces;
@@ -14,8 +13,7 @@ using System.Threading.Tasks;
 namespace SPSCReady.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    [Authorize] // Matches Flutter AuthService headers
+    [Route("api/[controller]")] // Matches Flutter AuthService headers
     public class PapersController : ControllerBase
     {
         private readonly IPaperService _paperService;
@@ -31,6 +29,7 @@ namespace SPSCReady.API.Controllers
         /// Get all departments for upload form dropdown
         /// </summary>
         [HttpGet("departments")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<DepartmentDto>>> GetDepartments()
         {
             var departments = await _paperService.GetDepartmentsAsync();
@@ -41,6 +40,7 @@ namespace SPSCReady.API.Controllers
         /// Get posts for selected department
         /// </summary>
         [HttpGet("posts")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<PostDto>>> GetPosts([FromQuery] Guid departmentId)
         {
             var posts = await _paperService.GetPostsAsync(departmentId);
@@ -51,6 +51,7 @@ namespace SPSCReady.API.Controllers
         /// Get exam cycles for selected post
         /// </summary>
         [HttpGet("cycles")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<ExamCycleDto>>> GetExamCycles([FromQuery] Guid postId)
         {
             var cycles = await _paperService.GetExamCyclesAsync(postId);
@@ -61,6 +62,7 @@ namespace SPSCReady.API.Controllers
         /// Get all exam stages
         /// </summary>
         [HttpGet("stages")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<ExamStageDto>>> GetExamStages()
         {
             var stages = await _paperService.GetExamStagesAsync();
@@ -71,6 +73,7 @@ namespace SPSCReady.API.Controllers
         /// Get all subjects
         /// </summary>
         [HttpGet("subjects")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<ExamSubjectDto>>> GetSubjects()
         {
             var subjects = await _paperService.GetSubjectsAsync();
@@ -81,6 +84,7 @@ namespace SPSCReady.API.Controllers
         /// Upload paper - multipart form data endpoint
         /// </summary>
         [HttpPost("upload")]
+        [AllowAnonymous]
         public async Task<IActionResult> UploadPaper([FromForm] UploadPaperDto request, IFormFile pdfFile, [FromServices] IWebHostEnvironment env)
         {
             var webRootPath = env.WebRootPath;
@@ -92,6 +96,7 @@ namespace SPSCReady.API.Controllers
         /// Get papers with optional search by department, post name, exam type - existing endpoint 
         /// </summary>
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<List<ExamPaper>>> GetPapers(
             [FromQuery] string? search = null,
             [FromQuery] Guid? stageId = null,
@@ -111,7 +116,7 @@ namespace SPSCReady.API.Controllers
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                query = query.Where(p => p.Title.Contains(search, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(p => p.Title.Contains(search));
             }
 
             if (stageId.HasValue)
@@ -121,7 +126,7 @@ namespace SPSCReady.API.Controllers
 
             if (!string.IsNullOrWhiteSpace(departmentName))
             {
-                query = query.Where(p => p.ExamCycle.Department.Name.Contains(departmentName, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(p => p.ExamCycle.Department.Name.Contains(departmentName));
             }
 
             if (examYear.HasValue)
@@ -131,12 +136,12 @@ namespace SPSCReady.API.Controllers
 
             if (!string.IsNullOrWhiteSpace(stageName))
             {
-                query = query.Where(p => p.ExamStage.Name.Contains(stageName, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(p => p.ExamStage.Name.Contains(stageName));
             }
 
             if (!string.IsNullOrWhiteSpace(postName))
             {
-                query = query.Where(p => p.ExamCycle.Post.Name.Contains(postName, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(p => p.ExamCycle.Post.Name.Contains(postName));
             }
 
             var papers = await query.OrderByDescending(p => p.UploadedAt).ToListAsync();
