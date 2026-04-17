@@ -8,12 +8,15 @@ namespace SPSCReady.Application.DTOs
         public string Title { get; set; } = string.Empty;
 
         [Required]
-        public Guid ExamCycleId { get; set; }
+        public int DepartmentId { get; set; }
 
         [Required]
-        public Guid ExamStageId { get; set; }
+        public int PostId { get; set; }
 
         [Required]
-        public Guid SubjectId { get; set; }
+        public int StageId { get; set; }
+
+        [Required]
+        public int SubjectId { get; set; }
     }
 }

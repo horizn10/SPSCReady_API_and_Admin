@@ -240,9 +240,11 @@ namespace SPSCReady.Infrastructure.Migrations
 
             modelBuilder.Entity("SPSCReady.Domain.Entities.Department", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -253,48 +255,19 @@ namespace SPSCReady.Infrastructure.Migrations
                     b.ToTable("Departments");
                 });
 
-            modelBuilder.Entity("SPSCReady.Domain.Entities.ExamCycle", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("DepartmentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("ExamYear")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("PostId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PostId");
-
-                    b.HasIndex("DepartmentId", "PostId", "ExamYear");
-
-                    b.ToTable("ExamCycles");
-                });
-
             modelBuilder.Entity("SPSCReady.Domain.Entities.ExamPaper", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("ExamCycleId")
-                        .HasColumnType("uniqueidentifier");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<Guid>("ExamStageId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PdfUrl")
-                        .IsRequired()
+                    b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("SubjectId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<DateTime?>("ExamDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -303,22 +276,130 @@ namespace SPSCReady.Infrastructure.Migrations
                     b.Property<DateTime>("UploadedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UploadedBy")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
-
-                    b.HasIndex("ExamCycleId");
-
-                    b.HasIndex("ExamStageId");
-
-                    b.HasIndex("SubjectId");
 
                     b.ToTable("ExamPapers");
                 });
 
+            modelBuilder.Entity("SPSCReady.Domain.Entities.ExamPaperDept", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("ExamId", "DepartmentId")
+                        .IsUnique();
+
+                    b.ToTable("ExamPaperDepartments");
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.ExamPaperPost", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("ExamId", "PostId")
+                        .IsUnique();
+
+                    b.ToTable("ExamPaperPosts");
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.ExamPaperStage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StageId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StageId");
+
+                    b.HasIndex("ExamId", "StageId")
+                        .IsUnique();
+
+                    b.ToTable("ExamPaperStages");
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.ExamPaperSubject", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SubjectName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamId");
+
+                    b.HasIndex("StageId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.ToTable("ExamPaperSubjects");
+                });
+
             modelBuilder.Entity("SPSCReady.Domain.Entities.ExamStage", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -331,12 +412,14 @@ namespace SPSCReady.Infrastructure.Migrations
 
             modelBuilder.Entity("SPSCReady.Domain.Entities.Post", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("DepartmentId")
-                        .HasColumnType("uniqueidentifier");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -351,15 +434,22 @@ namespace SPSCReady.Infrastructure.Migrations
 
             modelBuilder.Entity("SPSCReady.Domain.Entities.Subject", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("StageId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("StageId");
 
                     b.ToTable("Subjects");
                 });
@@ -415,48 +505,86 @@ namespace SPSCReady.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SPSCReady.Domain.Entities.ExamCycle", b =>
+            modelBuilder.Entity("SPSCReady.Domain.Entities.ExamPaperDept", b =>
                 {
                     b.HasOne("SPSCReady.Domain.Entities.Department", "Department")
-                        .WithMany("ExamCycles")
+                        .WithMany()
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SPSCReady.Domain.Entities.Post", "Post")
-                        .WithMany("ExamCycles")
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("SPSCReady.Domain.Entities.ExamPaper", "Exam")
+                        .WithMany("Departments")
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Department");
 
-                    b.Navigation("Post");
+                    b.Navigation("Exam");
                 });
 
-            modelBuilder.Entity("SPSCReady.Domain.Entities.ExamPaper", b =>
+            modelBuilder.Entity("SPSCReady.Domain.Entities.ExamPaperPost", b =>
                 {
-                    b.HasOne("SPSCReady.Domain.Entities.ExamCycle", "ExamCycle")
-                        .WithMany("ExamPapers")
-                        .HasForeignKey("ExamCycleId")
+                    b.HasOne("SPSCReady.Domain.Entities.ExamPaper", "Exam")
+                        .WithMany("Posts")
+                        .HasForeignKey("ExamId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SPSCReady.Domain.Entities.ExamStage", "ExamStage")
-                        .WithMany("ExamPapers")
-                        .HasForeignKey("ExamStageId")
+                    b.HasOne("SPSCReady.Domain.Entities.Post", "Post")
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Exam");
+
+                    b.Navigation("Post");
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.ExamPaperStage", b =>
+                {
+                    b.HasOne("SPSCReady.Domain.Entities.ExamPaper", "Exam")
+                        .WithMany("Stages")
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SPSCReady.Domain.Entities.ExamStage", "Stage")
+                        .WithMany()
+                        .HasForeignKey("StageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Exam");
+
+                    b.Navigation("Stage");
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.ExamPaperSubject", b =>
+                {
+                    b.HasOne("SPSCReady.Domain.Entities.ExamPaper", "ExamPaper")
+                        .WithMany("Subjects")
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SPSCReady.Domain.Entities.ExamStage", "Stage")
+                        .WithMany()
+                        .HasForeignKey("StageId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SPSCReady.Domain.Entities.Subject", "Subject")
-                        .WithMany("ExamPapers")
+                        .WithMany()
                         .HasForeignKey("SubjectId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("ExamCycle");
+                    b.Navigation("ExamPaper");
 
-                    b.Navigation("ExamStage");
+                    b.Navigation("Stage");
 
                     b.Navigation("Subject");
                 });
@@ -472,31 +600,31 @@ namespace SPSCReady.Infrastructure.Migrations
                     b.Navigation("Department");
                 });
 
+            modelBuilder.Entity("SPSCReady.Domain.Entities.Subject", b =>
+                {
+                    b.HasOne("SPSCReady.Domain.Entities.ExamStage", "Stage")
+                        .WithMany()
+                        .HasForeignKey("StageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Stage");
+                });
+
             modelBuilder.Entity("SPSCReady.Domain.Entities.Department", b =>
                 {
-                    b.Navigation("ExamCycles");
-
                     b.Navigation("Posts");
                 });
 
-            modelBuilder.Entity("SPSCReady.Domain.Entities.ExamCycle", b =>
+            modelBuilder.Entity("SPSCReady.Domain.Entities.ExamPaper", b =>
                 {
-                    b.Navigation("ExamPapers");
-                });
+                    b.Navigation("Departments");
 
-            modelBuilder.Entity("SPSCReady.Domain.Entities.ExamStage", b =>
-                {
-                    b.Navigation("ExamPapers");
-                });
+                    b.Navigation("Posts");
 
-            modelBuilder.Entity("SPSCReady.Domain.Entities.Post", b =>
-                {
-                    b.Navigation("ExamCycles");
-                });
+                    b.Navigation("Stages");
 
-            modelBuilder.Entity("SPSCReady.Domain.Entities.Subject", b =>
-                {
-                    b.Navigation("ExamPapers");
+                    b.Navigation("Subjects");
                 });
 #pragma warning restore 612, 618
         }

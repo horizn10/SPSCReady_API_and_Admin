@@ -5,29 +5,22 @@ using SPSCReady.Application.DTOs;
 using SPSCReady.Application.Interfaces;
 using SPSCReady.Domain.Entities;
 using SPSCReady.Infrastructure.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.AspNetCore.Hosting;
 using System.Threading.Tasks;
 
 namespace SPSCReady.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")] // Matches Flutter AuthService headers
+    [Route("api/[controller]")]
     public class PapersController : ControllerBase
     {
         private readonly IPaperService _paperService;
-        private readonly ApplicationDbContext _context;
 
-        public PapersController(IPaperService paperService, ApplicationDbContext context)
+        public PapersController(IPaperService paperService)
         {
             _paperService = paperService;
-            _context = context;
         }
 
-        /// <summary>
-        /// Get all departments for upload form dropdown
-        /// </summary>
         [HttpGet("departments")]
         [AllowAnonymous]
         public async Task<ActionResult<List<DepartmentDto>>> GetDepartments()
@@ -36,31 +29,14 @@ namespace SPSCReady.API.Controllers
             return Ok(departments);
         }
 
-        /// <summary>
-        /// Get posts for selected department
-        /// </summary>
         [HttpGet("posts")]
         [AllowAnonymous]
-        public async Task<ActionResult<List<PostDto>>> GetPosts([FromQuery] Guid departmentId)
+        public async Task<ActionResult<List<PostDto>>> GetPosts([FromQuery] int departmentId)
         {
             var posts = await _paperService.GetPostsAsync(departmentId);
             return Ok(posts);
         }
 
-        /// <summary>
-        /// Get exam cycles for selected post
-        /// </summary>
-        [HttpGet("cycles")]
-        [AllowAnonymous]
-        public async Task<ActionResult<List<ExamCycleDto>>> GetExamCycles([FromQuery] Guid postId)
-        {
-            var cycles = await _paperService.GetExamCyclesAsync(postId);
-            return Ok(cycles);
-        }
-
-        /// <summary>
-        /// Get all exam stages
-        /// </summary>
         [HttpGet("stages")]
         [AllowAnonymous]
         public async Task<ActionResult<List<ExamStageDto>>> GetExamStages()
@@ -69,9 +45,6 @@ namespace SPSCReady.API.Controllers
             return Ok(stages);
         }
 
-        /// <summary>
-        /// Get all subjects
-        /// </summary>
         [HttpGet("subjects")]
         [AllowAnonymous]
         public async Task<ActionResult<List<ExamSubjectDto>>> GetSubjects()
@@ -80,9 +53,6 @@ namespace SPSCReady.API.Controllers
             return Ok(subjects);
         }
 
-        /// <summary>
-        /// Upload paper - multipart form data endpoint
-        /// </summary>
         [HttpPost("upload")]
         [AllowAnonymous]
         public async Task<IActionResult> UploadPaper([FromForm] UploadPaperDto request, IFormFile pdfFile, [FromServices] IWebHostEnvironment env)
@@ -92,60 +62,17 @@ namespace SPSCReady.API.Controllers
             return success ? Ok("Paper uploaded successfully") : BadRequest("Upload failed");
         }
 
-        /// <summary>
-        /// Get papers with optional search by department, post name, exam type - existing endpoint 
-        /// </summary>
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<List<ExamPaper>>> GetPapers(
+        public async Task<ActionResult<List<ExamPaperListDto>>> GetPapers(
             [FromQuery] string? search = null,
-            [FromQuery] Guid? stageId = null,
+            [FromQuery] int? stageId = null,
             [FromQuery] string? departmentName = null,
             [FromQuery] int? examYear = null,
             [FromQuery] string? stageName = null,
             [FromQuery] string? postName = null)
         {
-            // Keep direct DbContext query for search performance - doesn't need service
-            var query = _context.ExamPapers
-                .Include(p => p.ExamStage)
-                .Include(p => p.Subject)
-                .Include(p => p.ExamCycle)
-                    .ThenInclude(ec => ec.Post)
-                    .ThenInclude(ec => ec.Department)
-                .AsNoTracking();
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                query = query.Where(p => p.Title.Contains(search));
-            }
-
-            if (stageId.HasValue)
-            {
-                query = query.Where(p => p.ExamStageId == stageId.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(departmentName))
-            {
-                query = query.Where(p => p.ExamCycle.Department.Name.Contains(departmentName));
-            }
-
-            if (examYear.HasValue)
-            {
-                query = query.Where(p => p.ExamCycle.ExamYear == examYear.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(stageName))
-            {
-                query = query.Where(p => p.ExamStage.Name.Contains(stageName));
-            }
-
-            if (!string.IsNullOrWhiteSpace(postName))
-            {
-                query = query.Where(p => p.ExamCycle.Post.Name.Contains(postName));
-            }
-
-            var papers = await query.OrderByDescending(p => p.UploadedAt).ToListAsync();
-
+            var papers = await _paperService.GetPapersAsync(search, stageId, departmentName, examYear, stageName, postName);
             return Ok(papers);
         }
     }
