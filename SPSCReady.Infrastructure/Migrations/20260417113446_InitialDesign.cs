@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SPSCReady.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class PapersTable : Migration
+    public partial class InitialDesign : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -59,7 +59,8 @@ namespace SPSCReady.Infrastructure.Migrations
                 name: "Departments",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -68,27 +69,33 @@ namespace SPSCReady.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ExamPapers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ExamDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UploadedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExamPapers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ExamStages",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ExamStages", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Subjects",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Subjects", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -201,8 +208,9 @@ namespace SPSCReady.Infrastructure.Migrations
                 name: "Posts",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DepartmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DepartmentId = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -217,25 +225,97 @@ namespace SPSCReady.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ExamCycles",
+                name: "ExamPaperDepartments",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PostId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DepartmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ExamYear = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ExamId = table.Column<int>(type: "int", nullable: false),
+                    DepartmentId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ExamCycles", x => x.Id);
+                    table.PrimaryKey("PK_ExamPaperDepartments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ExamCycles_Departments_DepartmentId",
+                        name: "FK_ExamPaperDepartments_Departments_DepartmentId",
                         column: x => x.DepartmentId,
                         principalTable: "Departments",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_ExamCycles_Posts_PostId",
+                        name: "FK_ExamPaperDepartments_ExamPapers_ExamId",
+                        column: x => x.ExamId,
+                        principalTable: "ExamPapers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ExamPaperStages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ExamId = table.Column<int>(type: "int", nullable: false),
+                    StageId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExamPaperStages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ExamPaperStages_ExamPapers_ExamId",
+                        column: x => x.ExamId,
+                        principalTable: "ExamPapers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ExamPaperStages_ExamStages_StageId",
+                        column: x => x.StageId,
+                        principalTable: "ExamStages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Subjects",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StageId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Subjects", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Subjects_ExamStages_StageId",
+                        column: x => x.StageId,
+                        principalTable: "ExamStages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ExamPaperPosts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ExamId = table.Column<int>(type: "int", nullable: false),
+                    PostId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExamPaperPosts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ExamPaperPosts_ExamPapers_ExamId",
+                        column: x => x.ExamId,
+                        principalTable: "ExamPapers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ExamPaperPosts_Posts_PostId",
                         column: x => x.PostId,
                         principalTable: "Posts",
                         principalColumn: "Id",
@@ -243,34 +323,35 @@ namespace SPSCReady.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ExamPapers",
+                name: "ExamPaperSubjects",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ExamCycleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ExamStageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SubjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PdfUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ExamId = table.Column<int>(type: "int", nullable: false),
+                    StageId = table.Column<int>(type: "int", nullable: false),
+                    SubjectId = table.Column<int>(type: "int", nullable: false),
+                    SubjectName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Url = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ExamPapers", x => x.Id);
+                    table.PrimaryKey("PK_ExamPaperSubjects", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ExamPapers_ExamCycles_ExamCycleId",
-                        column: x => x.ExamCycleId,
-                        principalTable: "ExamCycles",
+                        name: "FK_ExamPaperSubjects_ExamPapers_ExamId",
+                        column: x => x.ExamId,
+                        principalTable: "ExamPapers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ExamPapers_ExamStages_ExamStageId",
-                        column: x => x.ExamStageId,
+                        name: "FK_ExamPaperSubjects_ExamStages_StageId",
+                        column: x => x.StageId,
                         principalTable: "ExamStages",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_ExamPapers_Subjects_SubjectId",
+                        name: "FK_ExamPaperSubjects_Subjects_SubjectId",
                         column: x => x.SubjectId,
                         principalTable: "Subjects",
                         principalColumn: "Id",
@@ -317,34 +398,62 @@ namespace SPSCReady.Infrastructure.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ExamCycles_DepartmentId_PostId_ExamYear",
-                table: "ExamCycles",
-                columns: new[] { "DepartmentId", "PostId", "ExamYear" });
+                name: "IX_ExamPaperDepartments_DepartmentId",
+                table: "ExamPaperDepartments",
+                column: "DepartmentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ExamCycles_PostId",
-                table: "ExamCycles",
+                name: "IX_ExamPaperDepartments_ExamId_DepartmentId",
+                table: "ExamPaperDepartments",
+                columns: new[] { "ExamId", "DepartmentId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExamPaperPosts_ExamId_PostId",
+                table: "ExamPaperPosts",
+                columns: new[] { "ExamId", "PostId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExamPaperPosts_PostId",
+                table: "ExamPaperPosts",
                 column: "PostId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ExamPapers_ExamCycleId",
-                table: "ExamPapers",
-                column: "ExamCycleId");
+                name: "IX_ExamPaperStages_ExamId_StageId",
+                table: "ExamPaperStages",
+                columns: new[] { "ExamId", "StageId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ExamPapers_ExamStageId",
-                table: "ExamPapers",
-                column: "ExamStageId");
+                name: "IX_ExamPaperStages_StageId",
+                table: "ExamPaperStages",
+                column: "StageId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ExamPapers_SubjectId",
-                table: "ExamPapers",
+                name: "IX_ExamPaperSubjects_ExamId",
+                table: "ExamPaperSubjects",
+                column: "ExamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExamPaperSubjects_StageId",
+                table: "ExamPaperSubjects",
+                column: "StageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExamPaperSubjects_SubjectId",
+                table: "ExamPaperSubjects",
                 column: "SubjectId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Posts_DepartmentId",
                 table: "Posts",
                 column: "DepartmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Subjects_StageId",
+                table: "Subjects",
+                column: "StageId");
         }
 
         /// <inheritdoc />
@@ -366,7 +475,16 @@ namespace SPSCReady.Infrastructure.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "ExamPapers");
+                name: "ExamPaperDepartments");
+
+            migrationBuilder.DropTable(
+                name: "ExamPaperPosts");
+
+            migrationBuilder.DropTable(
+                name: "ExamPaperStages");
+
+            migrationBuilder.DropTable(
+                name: "ExamPaperSubjects");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
@@ -375,19 +493,19 @@ namespace SPSCReady.Infrastructure.Migrations
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "ExamCycles");
+                name: "Posts");
 
             migrationBuilder.DropTable(
-                name: "ExamStages");
+                name: "ExamPapers");
 
             migrationBuilder.DropTable(
                 name: "Subjects");
 
             migrationBuilder.DropTable(
-                name: "Posts");
+                name: "Departments");
 
             migrationBuilder.DropTable(
-                name: "Departments");
+                name: "ExamStages");
         }
     }
 }

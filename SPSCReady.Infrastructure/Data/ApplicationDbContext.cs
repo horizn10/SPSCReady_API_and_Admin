@@ -10,58 +10,95 @@ namespace SPSCReady.Infrastructure.Data
 
         public DbSet<Department> Departments { get; set; }
         public DbSet<Post> Posts { get; set; }
-        public DbSet<ExamCycle> ExamCycles { get; set; }
         public DbSet<ExamStage> ExamStages { get; set; }
         public DbSet<Subject> Subjects { get; set; }
         public DbSet<ExamPaper> ExamPapers { get; set; }
+        public DbSet<ExamPaperDept> ExamPaperDepartments { get; set; }
+        public DbSet<ExamPaperPost> ExamPaperPosts { get; set; }
+        public DbSet<ExamPaperStage> ExamPaperStages { get; set; }
+        public DbSet<ExamPaperSubject> ExamPaperSubjects { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            // 1. Post -> Department
+            // Post -> Department
             builder.Entity<Post>()
                 .HasOne(p => p.Department)
                 .WithMany(d => d.Posts)
                 .HasForeignKey(p => p.DepartmentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 2. ExamCycle -> Post
-            builder.Entity<ExamCycle>()
-                .HasOne(ec => ec.Post)
-                .WithMany(p => p.ExamCycles)
-                .HasForeignKey(ec => ec.PostId)
+            // ExamPaper junctions
+            // ExamPaperDept
+            builder.Entity<ExamPaperDept>()
+                .HasOne(d => d.Exam)
+                .WithMany(ep => ep.Departments)
+                .HasForeignKey(d => d.ExamId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ExamPaperDept>()
+                .HasIndex(d => new { d.ExamId, d.DepartmentId })
+                .IsUnique();
+
+            builder.Entity<ExamPaperDept>()
+                .HasOne(d => d.Department)
+                .WithMany()
+                .HasForeignKey(d => d.DepartmentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 3. ExamCycle -> Department
-            builder.Entity<ExamCycle>()
-                .HasOne(ec => ec.Department)
-                .WithMany(d => d.ExamCycles)
-                .HasForeignKey(ec => ec.DepartmentId)
+            // ExamPaperPost
+            builder.Entity<ExamPaperPost>()
+                .HasOne(p => p.Exam)
+                .WithMany(ep => ep.Posts)
+                .HasForeignKey(p => p.ExamId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ExamPaperPost>()
+                .HasIndex(p => new { p.ExamId, p.PostId })
+                .IsUnique();
+
+            builder.Entity<ExamPaperPost>()
+                .HasOne(p => p.Post)
+                .WithMany()
+                .HasForeignKey(p => p.PostId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 4. ExamPaper -> ExamCycle, Stage, and Subject
-            builder.Entity<ExamPaper>()
-                .HasOne(ep => ep.ExamCycle)
-                .WithMany(ec => ec.ExamPapers)
-                .HasForeignKey(ep => ep.ExamCycleId)
-                .OnDelete(DeleteBehavior.Cascade); // Safe to cascade delete papers if a cycle is removed
+            // ExamPaperStage
+            builder.Entity<ExamPaperStage>()
+                .HasOne(s => s.Exam)
+                .WithMany(ep => ep.Stages)
+                .HasForeignKey(s => s.ExamId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<ExamPaper>()
-                .HasOne(ep => ep.ExamStage)
-                .WithMany(es => es.ExamPapers)
-                .HasForeignKey(ep => ep.ExamStageId)
+            builder.Entity<ExamPaperStage>()
+                .HasIndex(s => new { s.ExamId, s.StageId })
+                .IsUnique();
+
+            builder.Entity<ExamPaperStage>()
+                .HasOne(s => s.Stage)
+                .WithMany()
+                .HasForeignKey(s => s.StageId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<ExamPaper>()
-                .HasOne(ep => ep.Subject)
-                .WithMany(s => s.ExamPapers)
-                .HasForeignKey(ep => ep.SubjectId)
+            // ExamPaperSubject leaf
+            builder.Entity<ExamPaperSubject>()
+                .HasOne(s => s.ExamPaper)
+                .WithMany(ep => ep.Subjects)
+                .HasForeignKey(s => s.ExamId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ExamPaperSubject>()
+                .HasOne(s => s.Stage)
+                .WithMany()
+                .HasForeignKey(s => s.StageId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Optional: Create the Composite Index for lightning-fast searches
-            builder.Entity<ExamCycle>()
-                .HasIndex(ec => new { ec.DepartmentId, ec.PostId, ec.ExamYear });
+            builder.Entity<ExamPaperSubject>()
+                .HasOne(s => s.Subject)
+                .WithMany()
+                .HasForeignKey(s => s.SubjectId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

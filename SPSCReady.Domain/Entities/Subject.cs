@@ -5,9 +5,12 @@ namespace SPSCReady.Domain.Entities
 {
     public class Subject
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public string Name { get; set; } = string.Empty; // e.g., "General Knowledge", "Reasoning"
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        public ICollection<ExamPaper> ExamPapers { get; set; } = new List<ExamPaper>();
+        // Removed ExamPapers (now hierarchical)
+        
+        public int StageId { get; set; }
+        public ExamStage? Stage { get; set; } = null;
     }
 }

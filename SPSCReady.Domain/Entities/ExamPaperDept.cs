@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 
 namespace SPSCReady.Domain.Entities
 {
-    public class Post
+    public class ExamPaperDept
     {
         public int Id { get; set; }
+        public int ExamId { get; set; }
         public int DepartmentId { get; set; }
-        public string Name { get; set; } = string.Empty;
-
         public Department Department { get; set; } = null!;
-        // Removed ExamCycles
+
+        public ExamPaper Exam { get; set; } = null!;
     }
 }
