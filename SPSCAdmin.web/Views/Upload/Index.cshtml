@@ -1,4 +1,4 @@
-﻿@model SPSCAdmin.Web.Models.UploadPaperViewModel
+﻿@model SPSCAdmin.web.Models.UploadPaperViewModel
 @{
     ViewData["Title"] = "Upload Paper";
 }
@@ -28,21 +28,28 @@
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Exam Cycle ID (Guid)</label>
-                        <input asp-for="ExamCycleId" class="form-control" placeholder="Paste GUID from Database" />
-                        <span asp-validation-for="ExamCycleId" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Exam Stage ID (Guid)</label>
-                        <input asp-for="ExamStageId" class="form-control" placeholder="Paste GUID from Database" />
-                        <span asp-validation-for="ExamStageId" class="text-danger"></span>
-                    </div>
+                    <label class="form-label fw-bold">Department ID</label>
+                    <input asp-for="DepartmentId" class="form-control" placeholder="e.g., 1" type="number" />
+                    <span asp-validation-for="DepartmentId" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Post ID</label>
+                    <input asp-for="PostId" class="form-control" placeholder="e.g., 1" type="number" />
+                    <span asp-validation-for="PostId" class="text-danger"></span>
+                </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Subject ID (Guid)</label>
-                    <input asp-for="SubjectId" class="form-control" placeholder="Paste GUID from Database" />
-                    <span asp-validation-for="SubjectId" class="text-danger"></span>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Stage ID</label>
+                        <input asp-for="StageId" class="form-control" placeholder="e.g., 1" type="number" />
+                        <span asp-validation-for="StageId" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Subject ID</label>
+                        <input asp-for="SubjectId" class="form-control" placeholder="e.g., 1" type="number" />
+                        <span asp-validation-for="SubjectId" class="text-danger"></span>
+                    </div>
                 </div>
 
                 <div class="mb-4">
