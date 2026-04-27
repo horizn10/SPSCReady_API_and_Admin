@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SPSCAdmin.Web.Models;
+using SPSCAdmin.web.Models;
+using Microsoft.AspNetCore.Http;
+using SPSCReady.Application.DTOs;
 using System.Net.Http.Headers;
 
-namespace SPSCAdmin.Web.Controllers
+namespace SPSCAdmin.web.Controllers
 {
     public class UploadController : Controller
     {
@@ -38,8 +40,9 @@ namespace SPSCAdmin.Web.Controllers
                 using var formContent = new MultipartFormDataContent();
 
                 formContent.Add(new StringContent(model.Title), "Title");
-                formContent.Add(new StringContent(model.ExamCycleId.ToString()), "ExamCycleId");
-                formContent.Add(new StringContent(model.ExamStageId.ToString()), "ExamStageId");
+                formContent.Add(new StringContent(model.DepartmentId.ToString()), "DepartmentId");
+                formContent.Add(new StringContent(model.PostId.ToString()), "PostId");
+                formContent.Add(new StringContent(model.StageId.ToString()), "StageId");
                 formContent.Add(new StringContent(model.SubjectId.ToString()), "SubjectId");
 
                 // Attach the PDF

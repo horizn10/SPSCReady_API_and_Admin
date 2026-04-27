@@ -1,4 +1,4 @@
--- Perfect interconnected test data for SPSCReadyDb - Run to clear & repopulate
+-- Perfect interconnected test data for testdb - Run to clear & repopulate
 
 BEGIN TRANSACTION;
 

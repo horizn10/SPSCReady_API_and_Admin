@@ -1,5 +1,8 @@
+USE [testdb]
+GO
+
 -- SPSCReady Test Data Seed Script for SSMS
--- Run in your SPSCReadyDb database
+-- Run in your testdb database
 -- Generates GUIDs - copy them for dropdown testing
 
 -- 1. Departments
