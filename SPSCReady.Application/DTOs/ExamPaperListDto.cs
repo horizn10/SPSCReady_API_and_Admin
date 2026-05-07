@@ -14,6 +14,13 @@ namespace SPSCReady.Application.DTOs
         public List<string> PostNames { get; set; } = new();
         public List<string> StageNames { get; set; } = new();
         public List<string> SubjectNames { get; set; } = new();
+
+        public string? SubjectName { get; set; }
+        public string? StageName { get; set; }
+
+        public string? Url { get; set; }
+
+        public string? ExamName { get; set; }
     }
 }
 
