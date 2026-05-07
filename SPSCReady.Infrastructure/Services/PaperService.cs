@@ -5,6 +5,7 @@ using SPSCReady.Application.Interfaces;
 using SPSCReady.Domain.Entities;
 using SPSCReady.Infrastructure.Data;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -61,60 +62,71 @@ namespace SPSCReady.Infrastructure.Services
             string? stageName = null,
             string? postName = null)
         {
-            var query = _context.ExamPapers
-                .Include(ep => ep.Departments).ThenInclude(d => d.Department)
-                .Include(ep => ep.Posts).ThenInclude(p => p.Post)
-                .Include(ep => ep.Stages).ThenInclude(s => s.Stage)
-                .Include(ep => ep.Subjects).ThenInclude(s => s.Subject).ThenInclude(sub => sub.Stage)
+            // IMPORTANT: Query ExamPaperSubjects directly to ensure ONE row per PDF/Subject
+            var query = _context.ExamPaperSubjects
+                .Include(s => s.ExamPaper).ThenInclude(ep => ep.Departments).ThenInclude(d => d.Department)
+                .Include(s => s.ExamPaper).ThenInclude(ep => ep.Posts).ThenInclude(p => p.Post)
+                .Include(s => s.Stage)
+                .Include(s => s.Subject)
                 .AsNoTracking();
 
+            // Filters applied to the parent ExamPaper or the specific Subject record
             if (!string.IsNullOrWhiteSpace(search))
             {
-                query = query.Where(ep => ep.Title.Contains(search));
+                query = query.Where(s => s.ExamPaper.Title.Contains(search) || (s.SubjectName != null && s.SubjectName.Contains(search)));
             }
 
             if (stageId.HasValue)
             {
-                query = query.Where(ep => ep.Stages.Any(s => s.StageId == stageId.Value) || ep.Subjects.Any(s => s.StageId == stageId.Value));
+                query = query.Where(s => s.StageId == stageId.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(departmentName))
             {
-                query = query.Where(ep => ep.Departments.Any(d => d.Department.Name.Contains(departmentName)));
+                query = query.Where(s => s.ExamPaper.Departments.Any(d => d.Department.Name.Contains(departmentName)));
             }
 
             if (examYear.HasValue)
             {
-                query = query.Where(ep => ep.ExamDate.HasValue && ep.ExamDate.Value.Year == examYear.Value);
+                query = query.Where(s =>
+                    (s.ExamPaper.ExamDate.HasValue && s.ExamPaper.ExamDate.Value.Year == examYear.Value) ||
+                    (!s.ExamPaper.ExamDate.HasValue && s.ExamPaper.UploadedAt.Year == examYear.Value));
             }
 
             if (!string.IsNullOrWhiteSpace(stageName))
             {
-                query = query.Where(ep => ep.Stages.Any(s => s.Stage.Name.Contains(stageName)));
+                query = query.Where(s => s.Stage.Name.Contains(stageName));
             }
 
             if (!string.IsNullOrWhiteSpace(postName))
             {
-                query = query.Where(ep => ep.Posts.Any(p => p.Post.Name.Contains(postName)));
+                query = query.Where(s => s.ExamPaper.Posts.Any(p => p.Post.Name.Contains(postName)));
             }
 
-            var papers = await query
-                .OrderByDescending(ep => ep.UploadedAt)
-                .Select(ep => new ExamPaperListDto
+            var paperList = await query
+                .OrderByDescending(s => s.Date ?? s.ExamPaper.UploadedAt)
+                .Select(s => new ExamPaperListDto
                 {
-                    Id = ep.Id,
-                    Title = ep.Title,
-                    Description = ep.Description,
-                    ExamDate = ep.ExamDate,
-                    UploadedAt = ep.UploadedAt,
-                    DepartmentNames = ep.Departments.Select(d => d.Department.Name).ToList(),
-                    PostNames = ep.Posts.Select(p => p.Post.Name).ToList(),
-                    StageNames = ep.Stages.Select(s => s.Stage.Name).ToList(),
-                    SubjectNames = ep.Subjects.Select(sub => sub.Subject.Name).ToList()
+                    Id = s.Id, // The unique ID of the subject entry
+                    Title = s.ExamPaper.Title, // e.g., "Paper - I"
+                    Description = s.ExamPaper.Description,
+                    ExamDate = s.ExamPaper.ExamDate ?? s.ExamPaper.UploadedAt,
+                    UploadedAt = s.ExamPaper.UploadedAt,
+                    DepartmentNames = s.ExamPaper.Departments.Select(d => d.Department.Name).ToList(),
+                    PostNames = s.ExamPaper.Posts.Select(p => p.Post.Name).ToList(),
+
+                    // Specific singular info for this card
+                    SubjectName = s.SubjectName ?? s.Subject.Name,
+                    StageName = s.Stage.Name,
+                    Url = s.Url,
+
+                    // Combined Exam Name for context
+                    ExamName = (s.ExamPaper.Posts.Select(p => p.Post.Name).FirstOrDefault() ?? "SPSC Exam") +
+                               " (" + (s.ExamPaper.ExamDate.HasValue ? s.ExamPaper.ExamDate.Value.Year : s.ExamPaper.UploadedAt.Year) + ")"
                 })
                 .ToListAsync();
 
-            return papers;
+            return paperList;
         }
 
         public async Task<bool> UploadPaperAsync(IFormFile pdfFile, UploadPaperDto request, string webRootPath)
@@ -138,7 +150,8 @@ namespace SPSCReady.Infrastructure.Services
                 {
                     Title = request.Title,
                     UploadedBy = "system",
-                    UploadedAt = DateTime.UtcNow
+                    UploadedAt = DateTime.UtcNow,
+                    ExamDate = DateTime.UtcNow
                 };
 
                 examPaper.Departments.Add(new ExamPaperDept { DepartmentId = request.DepartmentId });
