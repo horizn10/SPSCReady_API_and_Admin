@@ -20,5 +20,7 @@ namespace SPSCReady.Application.Interfaces
             int? examYear = null,
             string? stageName = null,
             string? postName = null);
+
+        Task<bool> MultiUploadPaperAsync(List<IFormFile> pdfFiles, MultiUploadPaperDto request, string webRootPath);
     }
 }

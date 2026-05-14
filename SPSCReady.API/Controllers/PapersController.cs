@@ -6,6 +6,7 @@ using SPSCReady.Application.Interfaces;
 using SPSCReady.Domain.Entities;
 using SPSCReady.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace SPSCReady.API.Controllers
@@ -60,6 +61,37 @@ namespace SPSCReady.API.Controllers
             var webRootPath = env.WebRootPath;
             var success = await _paperService.UploadPaperAsync(pdfFile, request, webRootPath);
             return success ? Ok("Paper uploaded successfully") : BadRequest("Upload failed");
+        }
+
+[HttpPost("multi-upload")]
+        [AllowAnonymous]
+        public async Task<IActionResult> MultiUploadPaper(string Title, int DepartmentId, int PostId, int ExamYear, string SubjectPapersJson, List<IFormFile> PdfFiles, [FromServices] IWebHostEnvironment env)
+        {
+            Console.WriteLine($"[API HIT] Title={Title}, Dept={DepartmentId}, Post={PostId}, Year={ExamYear}, Files={PdfFiles?.Count ?? 0}, Json={SubjectPapersJson}");
+            try
+            {
+                var subjectPapers = JsonSerializer.Deserialize<List<SubjectPaperDto>>(SubjectPapersJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                if (subjectPapers == null || PdfFiles == null || subjectPapers.Count != PdfFiles.Count)
+                    return BadRequest("Invalid data: Subject papers count must match PDF files count");
+
+                var requestDto = new MultiUploadPaperDto
+                {
+                    Title = Title,
+                    DepartmentId = DepartmentId,
+                    PostId = PostId,
+                    ExamYear = ExamYear,
+                    SubjectPapers = subjectPapers
+                };
+
+                var webRootPath = env.WebRootPath;
+                var success = await _paperService.MultiUploadPaperAsync(PdfFiles, requestDto, webRootPath);
+                return success ? Ok("Papers uploaded successfully") : BadRequest("Multi-upload failed");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[API ERROR] {ex}");
+                return StatusCode(500, new { error = ex.Message, details = ex.InnerException?.Message });
+            }
         }
 
         [HttpGet]
