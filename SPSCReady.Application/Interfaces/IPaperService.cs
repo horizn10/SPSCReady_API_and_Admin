@@ -11,7 +11,7 @@ namespace SPSCReady.Application.Interfaces
         Task<List<PostDto>> GetPostsAsync(int departmentId);
         Task<List<ExamStageDto>> GetExamStagesAsync();
         Task<List<ExamSubjectDto>> GetSubjectsAsync();
-        Task<bool> UploadPaperAsync(IFormFile pdfFile, UploadPaperDto request, string webRootPath);
+        Task<bool> UploadPaperAsync(IFormFile pdfFile, UploadPaperDto request);
 
         Task<List<ExamPaperListDto>> GetPapersAsync(
             string? search = null,
@@ -20,5 +20,7 @@ namespace SPSCReady.Application.Interfaces
             int? examYear = null,
             string? stageName = null,
             string? postName = null);
+
+        Task<string?> GetPdfUrlAsync(int subjectEntryId);
     }
 }

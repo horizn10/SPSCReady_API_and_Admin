@@ -55,10 +55,9 @@ namespace SPSCReady.API.Controllers
 
         [HttpPost("upload")]
         [AllowAnonymous]
-        public async Task<IActionResult> UploadPaper([FromForm] UploadPaperDto request, IFormFile pdfFile, [FromServices] IWebHostEnvironment env)
+        public async Task<IActionResult> UploadPaper([FromForm] UploadPaperDto request, IFormFile pdfFile)
         {
-            var webRootPath = env.WebRootPath;
-            var success = await _paperService.UploadPaperAsync(pdfFile, request, webRootPath);
+            var success = await _paperService.UploadPaperAsync(pdfFile, request);
             return success ? Ok("Paper uploaded successfully") : BadRequest("Upload failed");
         }
 
@@ -74,6 +73,18 @@ namespace SPSCReady.API.Controllers
         {
             var papers = await _paperService.GetPapersAsync(search, stageId, departmentName, examYear, stageName, postName);
             return Ok(papers);
+        }
+
+        [HttpGet("{subjectEntryId}/pdf-url")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetPdfUrl(int subjectEntryId)
+        {
+            var url = await _paperService.GetPdfUrlAsync(subjectEntryId);
+
+            if (url == null || url.Trim().Length == 0)
+                return NotFound(new { message = "PDF URL not found for this paper." });
+
+            return Ok(new { url = url });
         }
     }
 }
