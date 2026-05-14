@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SPSCReady.Application.DTOs;
 using SPSCReady.Application.Interfaces;
 
@@ -10,12 +9,10 @@ namespace SPSCReady.API.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IPaperService _paperService;
-        private readonly IWebHostEnvironment _env;
 
-        public AdminController(IPaperService paperService, IWebHostEnvironment env)
+        public AdminController(IPaperService paperService)
         {
             _paperService = paperService;
-            _env = env;
         }
 
         [HttpPost("upload")]
@@ -31,7 +28,7 @@ namespace SPSCReady.API.Controllers
                 return BadRequest("Only PDF files are allowed.");
             }
 
-            var success = await _paperService.UploadPaperAsync(pdfFile, request, _env.WebRootPath);
+            var success = await _paperService.UploadPaperAsync(pdfFile, request);
 
             if (success)
             {

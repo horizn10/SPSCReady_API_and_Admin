@@ -97,6 +97,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IPaperService, PaperService>();
+builder.Services.AddSingleton<IR2StorageService, R2StorageService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

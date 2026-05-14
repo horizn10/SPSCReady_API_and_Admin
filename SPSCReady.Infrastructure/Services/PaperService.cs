@@ -15,10 +15,12 @@ namespace SPSCReady.Infrastructure.Services
     public class PaperService : IPaperService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IR2StorageService _r2Storage;
 
-        public PaperService(ApplicationDbContext context)
+        public PaperService(ApplicationDbContext context, IR2StorageService r2Storage)
         {
             _context = context;
+            _r2Storage = r2Storage;
         }
 
         public async Task<List<DepartmentDto>> GetDepartmentsAsync()
@@ -129,49 +131,56 @@ namespace SPSCReady.Infrastructure.Services
             return paperList;
         }
 
-        public async Task<bool> UploadPaperAsync(IFormFile pdfFile, UploadPaperDto request, string webRootPath)
+        public async Task<string?> GetPdfUrlAsync(int subjectEntryId)
+        {
+            var subject = await _context.ExamPaperSubjects
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.Id == subjectEntryId);
+
+            return subject?.Url;
+        }
+
+        public async Task<bool> UploadPaperAsync(IFormFile pdfFile, UploadPaperDto request)
         {
             try
             {
-                if (pdfFile == null || pdfFile.Length == 0 || !pdfFile.ContentType.Equals("application/pdf"))
+                if (pdfFile == null || pdfFile.Length == 0 ||
+                    !pdfFile.ContentType.Equals("application/pdf"))
                     return false;
 
-                var pdfsDir = Path.Combine(webRootPath, "pdfs");
-                Directory.CreateDirectory(pdfsDir);
-                var fileName = $"{Guid.NewGuid():N}.pdf";
-                var filePath = Path.Combine(pdfsDir, fileName);
+                var subject  = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == request.SubjectId);
+                var safeTitle = System.Text.RegularExpressions.Regex
+                                  .Replace(request.Title.ToLower(), @"[^a-z0-9]+", "-");
+                var fileName = $"papers/{safeTitle}-{Guid.NewGuid():N[..8]}.pdf";
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                string r2Url;
+                using (var stream = pdfFile.OpenReadStream())
                 {
-                    await pdfFile.CopyToAsync(stream);
+                    r2Url = await _r2Storage.UploadPdfAsync(stream, fileName, pdfFile.ContentType);
                 }
 
                 var examPaper = new ExamPaper
                 {
-                    Title = request.Title,
+                    Title      = request.Title,
                     UploadedBy = "system",
                     UploadedAt = DateTime.UtcNow,
-                    ExamDate = DateTime.UtcNow
+                    ExamDate   = DateTime.UtcNow
                 };
 
                 examPaper.Departments.Add(new ExamPaperDept { DepartmentId = request.DepartmentId });
-                examPaper.Posts.Add(new ExamPaperPost { PostId = request.PostId });
-                examPaper.Stages.Add(new ExamPaperStage { StageId = request.StageId });
-
-                var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == request.SubjectId);
-                var subjectLeaf = new ExamPaperSubject
+                examPaper.Posts.Add(new ExamPaperPost       { PostId       = request.PostId       });
+                examPaper.Stages.Add(new ExamPaperStage     { StageId      = request.StageId      });
+                examPaper.Subjects.Add(new ExamPaperSubject
                 {
-                    StageId = request.StageId,
-                    SubjectId = request.SubjectId,
+                    StageId     = request.StageId,
+                    SubjectId   = request.SubjectId,
                     SubjectName = subject?.Name,
-                    Url = $"/pdfs/{fileName}",
-                    Date = DateTime.UtcNow
-                };
-                examPaper.Subjects.Add(subjectLeaf);
+                    Url         = r2Url,
+                    Date        = DateTime.UtcNow
+                });
 
                 _context.ExamPapers.Add(examPaper);
                 await _context.SaveChangesAsync();
-
                 return true;
             }
             catch
