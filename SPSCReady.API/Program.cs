@@ -4,9 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SPSCReady.Application.Interfaces;
+using SPSCReady.Application.Services;
 using SPSCReady.Domain.Entities;
 using SPSCReady.Infrastructure.Data;
 using SPSCReady.Infrastructure.Services;
+using SPSCReady.Infrastructure.Repositories;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -98,6 +100,14 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IPaperService, PaperService>();
 builder.Services.AddSingleton<IR2StorageService, R2StorageService>();
+
+// MockTest Module Services and Repositories
+builder.Services.AddScoped<IMockTestService, MockTestService>();
+builder.Services.AddScoped<IAttemptService, AttemptService>();
+builder.Services.AddScoped<IExamRepository, ExamRepository>();
+builder.Services.AddScoped<IMockTestRepository, MockTestRepository>();
+builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+builder.Services.AddScoped<IAttemptRepository, AttemptRepository>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

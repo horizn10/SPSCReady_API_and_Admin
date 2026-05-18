@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPSC Mock Test — Backend Roadmap v1.0</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0d11;
+    --surface: #12151c;
+    --surface2: #1a1e28;
+    --border: #252a36;
+    --border2: #2f3545;
+    --accent: #4f8ef7;
+    --accent2: #7c5cfc;
+    --green: #2dca73;
+    --amber: #f5a623;
+    --red: #f05c5c;
+    --teal: #1fc8b0;
+    --pink: #e95bac;
+    --text: #e8eaf0;
+    --text2: #8b90a0;
+    --text3: #555c70;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 0 0 80px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0d1220 0%, #0b0d11 60%);
+    border-bottom: 1px solid var(--border);
+    padding: 56px 48px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(79,142,247,.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: 80px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(124,92,252,.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hero-tag::before {
+    content: '';
+    width: 20px; height: 1px;
+    background: var(--accent);
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub {
+    color: var(--text2);
+    font-size: 15px;
+    max-width: 600px;
+    font-family: var(--mono);
+    font-weight: 400;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+  }
+  .meta-pill {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .meta-pill .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+  .section { padding: 48px 0 0; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    min-width: 28px;
+  }
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+  .section-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-left: auto;
+  }
+  .badge-start { background: rgba(45,202,115,.12); color: var(--green); border: 1px solid rgba(45,202,115,.25); }
+  .badge-core  { background: rgba(79,142,247,.12); color: var(--accent); border: 1px solid rgba(79,142,247,.25); }
+  .badge-api   { background: rgba(124,92,252,.12); color: var(--accent2); border: 1px solid rgba(124,92,252,.25); }
+  .badge-test  { background: rgba(245,166,35,.12); color: var(--amber); border: 1px solid rgba(245,166,35,.25); }
+
+  /* ── PHASE TRACKER ── */
+  .phases {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 36px 0 0;
+    padding: 0 32px;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .phase-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .phase-card:hover { border-color: var(--border2); }
+  .phase-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .phase-card.p1::before { background: var(--green); }
+  .phase-card.p2::before { background: var(--accent); }
+  .phase-card.p3::before { background: var(--accent2); }
+  .phase-card.p4::before { background: var(--amber); }
+  .phase-card.p5::before { background: var(--teal); }
+  .phase-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .phase-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .phase-desc {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  /* ── DB SCHEMA TABLE ── */
+  .schema-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .db-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color .2s, transform .2s;
+  }
+  .db-table:hover {
+    border-color: var(--border2);
+    transform: translateY(-1px);
+  }
+  .db-table-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+  }
+  .table-icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .db-table-name {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .db-table-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: auto;
+    letter-spacing: .5px;
+  }
+  .db-col-list { padding: 4px 0; }
+  .db-col {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    border-bottom: 1px solid rgba(255,255,255,.03);
+    transition: background .15s;
+  }
+  .db-col:last-child { border-bottom: none; }
+  .db-col:hover { background: rgba(255,255,255,.025); }
+  .col-name {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text);
+  }
+  .col-name.pk { color: var(--amber); }
+  .col-name.fk { color: var(--accent); }
+  .col-type {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+  }
+  .col-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    letter-spacing: .4px;
+    min-width: 24px;
+    text-align: center;
+  }
+  .tag-pk { background: rgba(245,166,35,.15); color: var(--amber); }
+  .tag-fk { background: rgba(79,142,247,.15); color: var(--accent); }
+  .tag-nn { background: rgba(45,202,115,.1); color: var(--green); }
+  .tag-null { background: rgba(255,255,255,.06); color: var(--text3); }
+  .tag-uq { background: rgba(124,92,252,.15); color: var(--accent2); }
+
+  /* ── RELATIONS ── */
+  .relation-list { display: flex; flex-direction: column; gap: 8px; }
+  .relation-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    transition: border-color .2s;
+  }
+  .relation-row:hover { border-color: var(--border2); }
+  .rel-from { color: var(--amber); font-weight: 700; }
+  .rel-to   { color: var(--accent); font-weight: 700; }
+  .rel-arrow { color: var(--text3); font-size: 16px; }
+  .rel-type {
+    margin-left: auto;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(79,142,247,.1);
+    color: var(--accent);
+    border: 1px solid rgba(79,142,247,.2);
+  }
+  .rel-label { color: var(--text2); }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: #0d1018;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .code-header {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+  }
+  .code-dots { display: flex; gap: 5px; }
+  .code-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+  .code-dot.r { background: #f05c5c; }
+  .code-dot.y { background: #f5a623; }
+  .code-dot.g { background: #2dca73; }
+  .code-lang {
+    margin-left: auto;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: rgba(79,142,247,.12);
+    color: var(--accent);
+  }
+  pre {
+    padding: 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .kw  { color: #c678dd; }
+  .cls { color: #e5c07b; }
+  .str { color: #98c379; }
+  .cmt { color: #5c6370; font-style: italic; }
+  .num { color: #d19a66; }
+  .attr{ color: #61afef; }
+  .prop{ color: #e06c75; }
+  .iface { color: #56b6c2; }
+
+  /* ── STEP LIST ── */
+  .step-list { display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 0;
+    position: relative;
+  }
+  .step:not(:last-child) .step-line {
+    position: absolute;
+    left: 23px;
+    top: 40px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+  .step-num-col { display: flex; flex-direction: column; align-items: center; padding-top: 4px; }
+  .step-circle {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    z-index: 1;
+    position: relative;
+  }
+  .step-body { padding: 0 0 32px 16px; }
+  .step-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    padding-top: 4px;
+  }
+  .step-desc {
+    color: var(--text2);
+    font-family: var(--mono);
+    font-size: 11.5px;
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+
+  /* ── API TABLE ── */
+  .api-table { width: 100%; border-collapse: collapse; }
+  .api-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text3);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .api-table td {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    vertical-align: top;
+    color: var(--text2);
+  }
+  .api-table tr:last-child td { border-bottom: none; }
+  .api-table tr:hover td { background: rgba(255,255,255,.02); }
+  .method {
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    display: inline-block;
+  }
+  .GET    { background: rgba(45,202,115,.15); color: var(--green); }
+  .POST   { background: rgba(79,142,247,.15); color: var(--accent); }
+  .PUT    { background: rgba(245,166,35,.15); color: var(--amber); }
+  .DELETE { background: rgba(240,92,92,.15); color: var(--red); }
+  .endpoint { color: var(--text); }
+  .api-desc { color: var(--text2); }
+  .auth-tag {
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: rgba(124,92,252,.12);
+    color: var(--accent2);
+    border: 1px solid rgba(124,92,252,.2);
+  }
+
+  /* ── NORM BOX ── */
+  .norm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .norm-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .norm-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 60px; height: 60px;
+    border-radius: 60px 0 0 0;
+    opacity: .06;
+  }
+  .norm-level {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1;
+  }
+  .norm-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .norm-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .norm-list li {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    padding-left: 14px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .norm-list li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    font-size: 9px;
+  }
+
+  /* ── FOLDER TREE ── */
+  .tree {
+    background: #0d1018;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.9;
+  }
+  .tree-dir { color: var(--accent); font-weight: 700; }
+  .tree-file { color: var(--text2); }
+  .tree-new { color: var(--green); }
+  .tree-indent-1 { padding-left: 20px; }
+  .tree-indent-2 { padding-left: 40px; }
+  .tree-indent-3 { padding-left: 60px; }
+  .tree-cmt { color: var(--text3); font-style: italic; }
+
+  /* ── CHECKLIST ── */
+  .checklist { display: flex; flex-direction: column; gap: 8px; }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text2);
+    transition: border-color .2s;
+  }
+  .check-item:hover { border-color: var(--border2); }
+  .check-box {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    border: 1px solid var(--border2);
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+  }
+  .check-box.done { background: var(--green); border-color: var(--green); color: #0b0d11; }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .callout.info  { background: rgba(79,142,247,.07); border: 1px solid rgba(79,142,247,.2); color: #8eb8f7; }
+  .callout.warn  { background: rgba(245,166,35,.07); border: 1px solid rgba(245,166,35,.2); color: #f0b84c; }
+  .callout.tip   { background: rgba(45,202,115,.07); border: 1px solid rgba(45,202,115,.2); color: #5ddc96; }
+  .callout.danger{ background: rgba(240,92,92,.07); border: 1px solid rgba(240,92,92,.2); color: #f07070; }
+
+  /* ── EF MIGRATION STEPS ── */
+  .mig-steps { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .mig-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .mig-n {
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--border2);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .mig-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .mig-cmd {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--green);
+    background: rgba(45,202,115,.07);
+    border: 1px solid rgba(45,202,115,.15);
+    border-radius: 5px;
+    padding: 6px 10px;
+    margin-top: 8px;
+    word-break: break-all;
+  }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--border); margin: 48px 32px; max-width: 1036px; margin-left: auto; margin-right: auto; }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    max-width: 500px;
+    margin: 32px 32px 0;
+  }
+  .toc-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .toc-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+    color: var(--text2);
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: color .15s;
+    text-decoration: none;
+  }
+  .toc-item:hover { color: var(--accent); }
+  .toc-num { color: var(--text3); min-width: 20px; }
+
+  hr.section-sep {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ══════════════════════════════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-tag">SPSCReady · Clean Architecture · EF Core · v1.0</div>
+  <h1>Mock Test Module<br><span>Backend Roadmap</span></h1>
+  <p class="hero-sub">// DB design → EF Core entities → Migrations → API layer → Test flow</p>
+  <div class="hero-meta">
+    <div class="meta-pill"><span class="dot" style="background:var(--green)"></span>ASP.NET 8 Clean Architecture</div>
+    <div class="meta-pill"><span class="dot" style="background:var(--accent)"></span>EF Core 8 + SQL Server</div>
+    <div class="meta-pill"><span class="dot" style="background:var(--accent2)"></span>SSMS / Azure SQL</div>
+    <div class="meta-pill"><span class="dot" style="background:var(--amber)"></span>Flutter Client-ready APIs</div>
+  </div>
+</div>
+
+<!-- ══ PHASE TRACKER ══════════════════════════════════════════════════ -->
+<div class="phases">
+  <div class="phase-card p1">
+    <div class="phase-num">PHASE 01</div>
+    <div class="phase-name">DB Design & Normalisation</div>
+    <div class="phase-desc">Schema, 3NF, entity relationships</div>
+  </div>
+  <div class="phase-card p2">
+    <div class="phase-num">PHASE 02</div>
+    <div class="phase-name">Domain Layer</div>
+    <div class="phase-desc">Entities, enums, value objects</div>
+  </div>
+  <div class="phase-card p3">
+    <div class="phase-num">PHASE 03</div>
+    <div class="phase-name">Infrastructure Layer</div>
+    <div class="phase-desc">DbContext, configs, migrations</div>
+  </div>
+  <div class="phase-card p4">
+    <div class="phase-num">PHASE 04</div>
+    <div class="phase-name">Application Layer</div>
+    <div class="phase-desc">DTOs, interfaces, services</div>
+  </div>
+  <div class="phase-card p5">
+    <div class="phase-num">PHASE 05</div>
+    <div class="phase-name">API Layer</div>
+    <div class="phase-desc">Controllers, endpoints, middleware</div>
+  </div>
+</div>
+
+<!-- ══ TOC ════════════════════════════════════════════════════════════ -->
+<div class="toc">
+  <div class="toc-title">// Contents</div>
+  <a class="toc-item" href="#s1"><span class="toc-num">01</span> DB Schema (all tables)</a>
+  <a class="toc-item" href="#s2"><span class="toc-num">02</span> Normalisation (3NF)</a>
+  <a class="toc-item" href="#s3"><span class="toc-num">03</span> Relationships</a>
+  <a class="toc-item" href="#s4"><span class="toc-num">04</span> Folder Structure</a>
+  <a class="toc-item" href="#s5"><span class="toc-num">05</span> Domain Entities (C#)</a>
+  <a class="toc-item" href="#s6"><span class="toc-num">06</span> DbContext & Config</a>
+  <a class="toc-item" href="#s7"><span class="toc-num">07</span> EF Core Migrations</a>
+  <a class="toc-item" href="#s8"><span class="toc-num">08</span> Application Layer DTOs</a>
+  <a class="toc-item" href="#s9"><span class="toc-num">09</span> All API Endpoints</a>
+  <a class="toc-item" href="#s10"><span class="toc-num">10</span> Implementation Checklist</a>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="container">
+
+<!-- ══ SECTION 1 : DB SCHEMA ══════════════════════════════════════════ -->
+<div class="section" id="s1">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">Database Schema — All Tables</span>
+    <span class="section-badge badge-start">Phase 1</span>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">ℹ</span>
+    <span>All tables use <strong>INT IDENTITY</strong> PKs. EF Core will map these as <code>int</code> with <code>[Key]</code>. Timestamps use <code>DateTime</code> mapped to <code>datetime2</code> in SQL Server. Soft deletes via <code>IsActive</code> / <code>IsDeleted</code> on main tables.</span>
+  </div>
+
+  <div class="schema-grid">
+
+    <!-- Exam -->
+    <div class="db-table">
+      <div class="db-table-header">
+        <div class="table-icon" style="background:rgba(245,166,35,.12)">📋</div>
+        <span class="db-table-name">Exams</span>
+        <span class="db-table-tag" style="background:rgba(245,166,35,.12);color:var(--amber);border:1px solid rgba(245,166,35,.25)">CORE</span>
+      </div>
+      <div class="db-col-list">
+        <div class="db-col"><span class="col-name pk">ExamId</span><span class="col-type">int</span><span class="col-tag tag-pk">PK</span></div>
+        <div class="db-col"><span class="col-name">ExamName</span><span class="col-type">nvarchar(200)</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">ExamCode</span><span class="col-type">nvarchar(50)</span><span class="col-tag tag-uq">UQ</span></div>
+        <div class="db-col"><span class="col-name">ExamYear</span><span class="col-type">int</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">Description</span><span class="col-type">nvarchar(max)</span><span class="col-tag tag-null">NULL</span></div>
+        <div class="db-col"><span class="col-name">IsActive</span><span class="col-type">bit</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">CreatedAt</span><span class="col-type">datetime2</span><span class="col-tag tag-nn">NN</span></div>
+      </div>
+    </div>
+
+    <!-- MockTest -->
+    <div class="db-table">
+      <div class="db-table-header">
+        <div class="table-icon" style="background:rgba(79,142,247,.12)">📝</div>
+        <span class="db-table-name">MockTests</span>
+        <span class="db-table-tag" style="background:rgba(79,142,247,.12);color:var(--accent);border:1px solid rgba(79,142,247,.25)">CORE</span>
+      </div>
+      <div class="db-col-list">
+        <div class="db-col"><span class="col-name pk">MockTestId</span><span class="col-type">int</span><span class="col-tag tag-pk">PK</span></div>
+        <div class="db-col"><span class="col-name fk">ExamId</span><span class="col-type">int</span><span class="col-tag tag-fk">FK</span></div>
+        <div class="db-col"><span class="col-name">Title</span><span class="col-type">nvarchar(200)</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">PaperType</span><span class="col-type">nvarchar(20)</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">PaperNumber</span><span class="col-type">int</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">DurationMinutes</span><span class="col-type">int</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">TotalMarks</span><span class="col-type">int</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">TotalQuestions</span><span class="col-type">int</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">PassingMarks</span><span class="col-type">decimal(6,2)</span><span class="col-tag tag-null">NULL</span></div>
+        <div class="db-col"><span class="col-name">IsActive</span><span class="col-type">bit</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">CreatedAt</span><span class="col-type">datetime2</span><span class="col-tag tag-nn">NN</span></div>
+      </div>
+    </div>
+
+    <!-- Section -->
+    <div class="db-table">
+      <div class="db-table-header">
+        <div class="table-icon" style="background:rgba(124,92,252,.12)">📂</div>
+        <span class="db-table-name">Sections</span>
+        <span class="db-table-tag" style="background:rgba(124,92,252,.12);color:var(--accent2);border:1px solid rgba(124,92,252,.25)">CORE</span>
+      </div>
+      <div class="db-col-list">
+        <div class="db-col"><span class="col-name pk">SectionId</span><span class="col-type">int</span><span class="col-tag tag-pk">PK</span></div>
+        <div class="db-col"><span class="col-name fk">MockTestId</span><span class="col-type">int</span><span class="col-tag tag-fk">FK</span></div>
+        <div class="db-col"><span class="col-name">SectionName</span><span class="col-type">nvarchar(100)</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">SubjectTag</span><span class="col-type">nvarchar(50)</span><span class="col-tag tag-null">NULL</span></div>
+        <div class="db-col"><span class="col-name">OrderIndex</span><span class="col-type">int</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">QuestionCount</span><span class="col-type">int</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">MarksPerQuestion</span><span class="col-type">decimal(4,2)</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">NegativeMarks</span><span class="col-type">decimal(4,2)</span><span class="col-tag tag-nn">NN</span></div>
+      </div>
+    </div>
+
+    <!-- Question -->
+    <div class="db-table">
+      <div class="db-table-header">
+        <div class="table-icon" style="background:rgba(31,200,176,.12)">❓</div>
+        <span class="db-table-name">Questions</span>
+        <span class="db-table-tag" style="background:rgba(31,200,176,.12);color:var(--teal);border:1px solid rgba(31,200,176,.25)">CORE</span>
+      </div>
+      <div class="db-col-list">
+        <div class="db-col"><span class="col-name pk">QuestionId</span><span class="col-type">int</span><span class="col-tag tag-pk">PK</span></div>
+        <div class="db-col"><span class="col-name fk">SectionId</span><span class="col-type">int</span><span class="col-tag tag-fk">FK</span></div>
+        <div class="db-col"><span class="col-name">QuestionText</span><span class="col-type">nvarchar(max)</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">OptionA</span><span class="col-type">nvarchar(500)</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">OptionB</span><span class="col-type">nvarchar(500)</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">OptionC</span><span class="col-type">nvarchar(500)</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">OptionD</span><span class="col-type">nvarchar(500)</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">CorrectOption</span><span class="col-type">char(1)</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">Explanation</span><span class="col-type">nvarchar(max)</span><span class="col-tag tag-null">NULL</span></div>
+        <div class="db-col"><span class="col-name">DifficultyLevel</span><span class="col-type">nvarchar(10)</span><span class="col-tag tag-null">NULL</span></div>
+        <div class="db-col"><span class="col-name">OrderIndex</span><span class="col-type">int</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">IsActive</span><span class="col-type">bit</span><span class="col-tag tag-nn">NN</span></div>
+      </div>
+    </div>
+
+    <!-- UserAttempt -->
+    <div class="db-table">
+      <div class="db-table-header">
+        <div class="table-icon" style="background:rgba(233,91,172,.12)">👤</div>
+        <span class="db-table-name">UserAttempts</span>
+        <span class="db-table-tag" style="background:rgba(233,91,172,.12);color:var(--pink);border:1px solid rgba(233,91,172,.25)">RESULT</span>
+      </div>
+      <div class="db-col-list">
+        <div class="db-col"><span class="col-name pk">AttemptId</span><span class="col-type">int</span><span class="col-tag tag-pk">PK</span></div>
+        <div class="db-col"><span class="col-name fk">UserId</span><span class="col-type">int</span><span class="col-tag tag-fk">FK</span></div>
+        <div class="db-col"><span class="col-name fk">MockTestId</span><span class="col-type">int</span><span class="col-tag tag-fk">FK</span></div>
+        <div class="db-col"><span class="col-name">StartedAt</span><span class="col-type">datetime2</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">SubmittedAt</span><span class="col-type">datetime2</span><span class="col-tag tag-null">NULL</span></div>
+        <div class="db-col"><span class="col-name">ExpiresAt</span><span class="col-type">datetime2</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">TotalScore</span><span class="col-type">decimal(8,2)</span><span class="col-tag tag-null">NULL</span></div>
+        <div class="db-col"><span class="col-name">CorrectCount</span><span class="col-type">int</span><span class="col-tag tag-null">NULL</span></div>
+        <div class="db-col"><span class="col-name">WrongCount</span><span class="col-type">int</span><span class="col-tag tag-null">NULL</span></div>
+        <div class="db-col"><span class="col-name">SkippedCount</span><span class="col-type">int</span><span class="col-tag tag-null">NULL</span></div>
+        <div class="db-col"><span class="col-name">Percentage</span><span class="col-type">decimal(5,2)</span><span class="col-tag tag-null">NULL</span></div>
+        <div class="db-col"><span class="col-name">Status</span><span class="col-type">nvarchar(20)</span><span class="col-tag tag-nn">NN</span></div>
+      </div>
+    </div>
+
+    <!-- UserAnswer -->
+    <div class="db-table">
+      <div class="db-table-header">
+        <div class="table-icon" style="background:rgba(240,92,92,.12)">✏️</div>
+        <span class="db-table-name">UserAnswers</span>
+        <span class="db-table-tag" style="background:rgba(240,92,92,.12);color:var(--red);border:1px solid rgba(240,92,92,.25)">RESULT</span>
+      </div>
+      <div class="db-col-list">
+        <div class="db-col"><span class="col-name pk">AnswerId</span><span class="col-type">int</span><span class="col-tag tag-pk">PK</span></div>
+        <div class="db-col"><span class="col-name fk">AttemptId</span><span class="col-type">int</span><span class="col-tag tag-fk">FK</span></div>
+        <div class="db-col"><span class="col-name fk">QuestionId</span><span class="col-type">int</span><span class="col-tag tag-fk">FK</span></div>
+        <div class="db-col"><span class="col-name">SelectedOption</span><span class="col-type">char(1)</span><span class="col-tag tag-null">NULL</span></div>
+        <div class="db-col"><span class="col-name">IsCorrect</span><span class="col-type">bit</span><span class="col-tag tag-null">NULL</span></div>
+        <div class="db-col"><span class="col-name">MarksAwarded</span><span class="col-type">decimal(6,2)</span><span class="col-tag tag-null">NULL</span></div>
+        <div class="db-col"><span class="col-name">IsMarkedForReview</span><span class="col-type">bit</span><span class="col-tag tag-nn">NN</span></div>
+        <div class="db-col"><span class="col-name">AnsweredAt</span><span class="col-type">datetime2</span><span class="col-tag tag-null">NULL</span></div>
+      </div>
+    </div>
+
+  </div>
+  <!-- Constraint Notes -->
+  <div class="callout warn" style="margin-top:16px">
+    <span class="callout-icon">⚠</span>
+    <span><strong>Constraints to add:</strong> <br>
+    • <code>MockTests</code>: CHECK (PaperType IN ('Prelim','Mains'))<br>
+    • <code>Questions</code>: CHECK (CorrectOption IN ('A','B','C','D'))<br>
+    • <code>UserAttempts</code>: CHECK (Status IN ('InProgress','Submitted','Expired','Abandoned'))<br>
+    • <code>UserAttempts</code>: UNIQUE (UserId, MockTestId) — one attempt per user per test (relax later for retakes)<br>
+    • <code>UserAnswers</code>: UNIQUE (AttemptId, QuestionId) — one answer row per question per attempt</span>
+  </div>
+</div>
+
+<!-- ══ SECTION 2 : NORMALISATION ═════════════════════════════════════ -->
+<div class="section" id="s2">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">Normalisation — Why 3NF</span>
+    <span class="section-badge badge-start">Phase 1</span>
+  </div>
+  <div class="norm-grid">
+    <div class="norm-card">
+      <div class="norm-level" style="color:var(--green)">1NF</div>
+      <div class="norm-title">First Normal Form</div>
+      <ul class="norm-list">
+        <li>Each column holds a single atomic value</li>
+        <li>No comma-separated option lists in Questions</li>
+        <li>Options A/B/C/D stored in separate columns</li>
+        <li>No arrays — UserAnswers is a separate table</li>
+      </ul>
+    </div>
+    <div class="norm-card">
+      <div class="norm-level" style="color:var(--accent)">2NF</div>
+      <div class="norm-title">Second Normal Form</div>
+      <ul class="norm-list">
+        <li>All non-key columns fully depend on PK</li>
+        <li>Question text not stored in UserAnswers — FK reference only</li>
+        <li>Paper metadata not duplicated in Sections</li>
+        <li>Exam info not repeated in every MockTest row</li>
+      </ul>
+    </div>
+    <div class="norm-card">
+      <div class="norm-level" style="color:var(--accent2)">3NF</div>
+      <div class="norm-title">Third Normal Form</div>
+      <ul class="norm-list">
+        <li>No transitive dependencies</li>
+        <li>MarksPerQuestion stored in Section, not repeated in UserAnswers</li>
+        <li>ExamCode does NOT determine TotalMarks (MockTest does)</li>
+        <li>Percentage in UserAttempts is computed but stored for query perf</li>
+      </ul>
+    </div>
+    <div class="norm-card">
+      <div class="norm-level" style="color:var(--amber)">DEN</div>
+      <div class="norm-title">Controlled Denormalisation</div>
+      <ul class="norm-list">
+        <li>TotalScore, CorrectCount, Percentage stored in UserAttempts</li>
+        <li>Calculated at submission time, cached for fast reads</li>
+        <li>Avoids expensive SUM() on every result screen load</li>
+        <li>Acceptable: source data (UserAnswers) always exists for recalc</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SECTION 3 : RELATIONSHIPS ════════════════════════════════════ -->
+<div class="section" id="s3">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">Table Relationships</span>
+    <span class="section-badge badge-start">Phase 1</span>
+  </div>
+  <div class="relation-list">
+    <div class="relation-row">
+      <span class="rel-from">Exams</span>
+      <span class="rel-arrow">→</span>
+      <span class="rel-from">MockTests</span>
+      <span class="rel-label">one exam has many mock tests (Prelim/Mains papers)</span>
+      <span class="rel-type">1 : N</span>
+    </div>
+    <div class="relation-row">
+      <span class="rel-from">MockTests</span>
+      <span class="rel-arrow">→</span>
+      <span class="rel-to">Sections</span>
+      <span class="rel-label">each paper divided into subject sections</span>
+      <span class="rel-type">1 : N</span>
+    </div>
+    <div class="relation-row">
+      <span class="rel-to">Sections</span>
+      <span class="rel-arrow">→</span>
+      <span class="rel-to">Questions</span>
+      <span class="rel-label">each section owns its questions</span>
+      <span class="rel-type">1 : N</span>
+    </div>
+    <div class="relation-row">
+      <span class="rel-from">MockTests</span>
+      <span class="rel-arrow">→</span>
+      <span class="rel-to">UserAttempts</span>
+      <span class="rel-label">many users attempt each mock test</span>
+      <span class="rel-type">1 : N</span>
+    </div>
+    <div class="relation-row">
+      <span class="rel-from">Users</span>
+      <span class="rel-arrow">→</span>
+      <span class="rel-to">UserAttempts</span>
+      <span class="rel-label">each user has multiple attempts across tests</span>
+      <span class="rel-type">1 : N</span>
+    </div>
+    <div class="relation-row">
+      <span class="rel-to">UserAttempts</span>
+      <span class="rel-arrow">→</span>
+      <span class="rel-to">UserAnswers</span>
+      <span class="rel-label">one attempt has one answer row per question</span>
+      <span class="rel-type">1 : N</span>
+    </div>
+    <div class="relation-row">
+      <span class="rel-to">Questions</span>
+      <span class="rel-arrow">→</span>
+      <span class="rel-to">UserAnswers</span>
+      <span class="rel-label">each question answered by many users</span>
+      <span class="rel-type">1 : N</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SECTION 4 : FOLDER STRUCTURE ════════════════════════════════ -->
+<div class="section" id="s4">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">Where to Place Files (Clean Architecture)</span>
+    <span class="section-badge badge-core">Phase 2–3</span>
+  </div>
+  <div class="callout tip">
+    <span class="callout-icon">💡</span>
+    <span>Files marked in <span style="color:var(--green)">green</span> are new additions for the mock test module. All other files presumably already exist in your repo.</span>
+  </div>
+  <div class="tree">
+    <div><span class="tree-dir">SPSCReady.Domain/</span></div>
+    <div class="tree-indent-1"><span class="tree-dir">Entities/</span></div>
+    <div class="tree-indent-2 tree-new">Exam.cs                   <span class="tree-cmt">← new</span></div>
+    <div class="tree-indent-2 tree-new">MockTest.cs               <span class="tree-cmt">← new</span></div>
+    <div class="tree-indent-2 tree-new">Section.cs                <span class="tree-cmt">← new</span></div>
+    <div class="tree-indent-2 tree-new">Question.cs               <span class="tree-cmt">← new</span></div>
+    <div class="tree-indent-2 tree-new">UserAttempt.cs            <span class="tree-cmt">← new</span></div>
+    <div class="tree-indent-2 tree-new">UserAnswer.cs             <span class="tree-cmt">← new</span></div>
+    <div class="tree-indent-1"><span class="tree-dir">Enums/</span></div>
+    <div class="tree-indent-2 tree-new">PaperType.cs              <span class="tree-cmt">← new</span></div>
+    <div class="tree-indent-2 tree-new">AttemptStatus.cs          <span class="tree-cmt">← new</span></div>
+    <div class="tree-indent-2 tree-new">DifficultyLevel.cs        <span class="tree-cmt">← new</span></div>
+    <br>
+    <div><span class="tree-dir">SPSCReady.Application/</span></div>
+    <div class="tree-indent-1"><span class="tree-dir">Interfaces/</span></div>
+    <div class="tree-indent-2 tree-new">IExamRepository.cs</div>
+    <div class="tree-indent-2 tree-new">IMockTestRepository.cs</div>
+    <div class="tree-indent-2 tree-new">IQuestionRepository.cs</div>
+    <div class="tree-indent-2 tree-new">IAttemptRepository.cs</div>
+    <div class="tree-indent-2 tree-new">IMockTestService.cs</div>
+    <div class="tree-indent-2 tree-new">IAttemptService.cs</div>
+    <div class="tree-indent-1"><span class="tree-dir">DTOs/MockTest/</span></div>
+    <div class="tree-indent-2 tree-new">ExamDto.cs</div>
+    <div class="tree-indent-2 tree-new">MockTestDto.cs</div>
+    <div class="tree-indent-2 tree-new">MockTestDetailDto.cs</div>
+    <div class="tree-indent-2 tree-new">SectionWithQuestionsDto.cs</div>
+    <div class="tree-indent-2 tree-new">QuestionDto.cs</div>
+    <div class="tree-indent-2 tree-new">StartAttemptRequestDto.cs</div>
+    <div class="tree-indent-2 tree-new">SubmitAttemptRequestDto.cs</div>
+    <div class="tree-indent-2 tree-new">AnswerSubmitDto.cs</div>
+    <div class="tree-indent-2 tree-new">AttemptResultDto.cs</div>
+    <div class="tree-indent-2 tree-new">SectionResultDto.cs</div>
+    <div class="tree-indent-1"><span class="tree-dir">Services/</span></div>
+    <div class="tree-indent-2 tree-new">MockTestService.cs</div>
+    <div class="tree-indent-2 tree-new">AttemptService.cs</div>
+    <br>
+    <div><span class="tree-dir">SPSCReady.Infrastructure/</span></div>
+    <div class="tree-indent-1"><span class="tree-dir">Persistence/</span></div>
+    <div class="tree-indent-2 tree-file">ApplicationDbContext.cs   <span class="tree-cmt">← add DbSets here</span></div>
+    <div class="tree-indent-1"><span class="tree-dir">Configurations/</span></div>
+    <div class="tree-indent-2 tree-new">ExamConfiguration.cs</div>
+    <div class="tree-indent-2 tree-new">MockTestConfiguration.cs</div>
+    <div class="tree-indent-2 tree-new">SectionConfiguration.cs</div>
+    <div class="tree-indent-2 tree-new">QuestionConfiguration.cs</div>
+    <div class="tree-indent-2 tree-new">UserAttemptConfiguration.cs</div>
+    <div class="tree-indent-2 tree-new">UserAnswerConfiguration.cs</div>
+    <div class="tree-indent-1"><span class="tree-dir">Repositories/</span></div>
+    <div class="tree-indent-2 tree-new">ExamRepository.cs</div>
+    <div class="tree-indent-2 tree-new">MockTestRepository.cs</div>
+    <div class="tree-indent-2 tree-new">QuestionRepository.cs</div>
+    <div class="tree-indent-2 tree-new">AttemptRepository.cs</div>
+    <div class="tree-indent-1"><span class="tree-dir">Migrations/</span></div>
+    <div class="tree-indent-2 tree-new">...auto-generated by EF Core</div>
+    <br>
+    <div><span class="tree-dir">SPSCReady.API/</span></div>
+    <div class="tree-indent-1"><span class="tree-dir">Controllers/</span></div>
+    <div class="tree-indent-2 tree-new">ExamsController.cs</div>
+    <div class="tree-indent-2 tree-new">MockTestsController.cs</div>
+    <div class="tree-indent-2 tree-new">AttemptsController.cs</div>
+  </div>
+</div>
+
+<!-- ══ SECTION 5 : DOMAIN ENTITIES ════════════════════════════════ -->
+<div class="section" id="s5">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <span class="section-title">Domain Layer — C# Entity Classes</span>
+    <span class="section-badge badge-core">Phase 2</span>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">ℹ</span>
+    <span>Entities are plain C# classes. No EF Core attributes in the Domain layer — all mapping goes in Infrastructure/Configurations using the Fluent API. This keeps Domain clean and testable.</span>
+  </div>
+
+  <!-- Enums -->
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div>
+      <span>Enums/PaperType.cs · AttemptStatus.cs</span>
+      <span class="code-lang">C#</span>
+    </div>
+    <pre><span class="kw">namespace</span> <span class="cls">SPSCReady.Domain.Enums</span>;
+
+<span class="kw">public enum</span> <span class="iface">PaperType</span>
+{
+    <span class="attr">Prelim</span> = <span class="num">1</span>,
+    <span class="attr">Mains</span>  = <span class="num">2</span>
+}
+
+<span class="kw">public enum</span> <span class="iface">AttemptStatus</span>
+{
+    <span class="attr">InProgress</span> = <span class="num">1</span>,
+    <span class="attr">Submitted</span>  = <span class="num">2</span>,
+    <span class="attr">Expired</span>    = <span class="num">3</span>,
+    <span class="attr">Abandoned</span>  = <span class="num">4</span>
+}
+
+<span class="kw">public enum</span> <span class="iface">DifficultyLevel</span>
+{
+    <span class="attr">Easy</span>   = <span class="num">1</span>,
+    <span class="attr">Medium</span> = <span class="num">2</span>,
+    <span class="attr">Hard</span>   = <span class="num">3</span>
+}</pre>
+  </div>
+
+  <!-- Exam entity -->
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div>
+      <span>Entities/Exam.cs</span>
+      <span class="code-lang">C#</span>
+    </div>
+    <pre><span class="kw">namespace</span> <span class="cls">SPSCReady.Domain.Entities</span>;
+
+<span class="kw">public class</span> <span class="cls">Exam</span>
+{
+    <span class="kw">public int</span>    <span class="prop">ExamId</span>     { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string</span> <span class="prop">ExamName</span>   { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">default</span>!;
+    <span class="kw">public string</span> <span class="prop">ExamCode</span>   { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">default</span>!;
+    <span class="kw">public int</span>    <span class="prop">ExamYear</span>   { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string?</span> <span class="prop">Description</span> { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public bool</span>   <span class="prop">IsActive</span>   { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">true</span>;
+    <span class="kw">public DateTime</span> <span class="prop">CreatedAt</span> { <span class="kw">get</span>; <span class="kw">set</span>; } = DateTime.UtcNow;
+
+    <span class="cmt">// Navigation</span>
+    <span class="kw">public</span> ICollection&lt;<span class="cls">MockTest</span>&gt; <span class="prop">MockTests</span> { <span class="kw">get</span>; <span class="kw">set</span>; } = [];
+}</pre>
+  </div>
+
+  <!-- MockTest entity -->
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div>
+      <span>Entities/MockTest.cs</span>
+      <span class="code-lang">C#</span>
+    </div>
+    <pre><span class="kw">using</span> <span class="cls">SPSCReady.Domain.Enums</span>;
+
+<span class="kw">namespace</span> <span class="cls">SPSCReady.Domain.Entities</span>;
+
+<span class="kw">public class</span> <span class="cls">MockTest</span>
+{
+    <span class="kw">public int</span>        <span class="prop">MockTestId</span>      { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span>        <span class="prop">ExamId</span>          { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string</span>     <span class="prop">Title</span>           { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">default</span>!;
+    <span class="kw">public</span> <span class="iface">PaperType</span>   <span class="prop">PaperType</span>       { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span>        <span class="prop">PaperNumber</span>     { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span>        <span class="prop">DurationMinutes</span> { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span>        <span class="prop">TotalMarks</span>      { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span>        <span class="prop">TotalQuestions</span>  { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public decimal?</span>   <span class="prop">PassingMarks</span>    { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public bool</span>       <span class="prop">IsActive</span>        { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">true</span>;
+    <span class="kw">public DateTime</span>   <span class="prop">CreatedAt</span>       { <span class="kw">get</span>; <span class="kw">set</span>; } = DateTime.UtcNow;
+
+    <span class="cmt">// Navigation</span>
+    <span class="kw">public</span> <span class="cls">Exam</span>                         <span class="prop">Exam</span>         { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">default</span>!;
+    <span class="kw">public</span> ICollection&lt;<span class="cls">Section</span>&gt;         <span class="prop">Sections</span>     { <span class="kw">get</span>; <span class="kw">set</span>; } = [];
+    <span class="kw">public</span> ICollection&lt;<span class="cls">UserAttempt</span>&gt;    <span class="prop">UserAttempts</span> { <span class="kw">get</span>; <span class="kw">set</span>; } = [];
+}</pre>
+  </div>
+
+  <!-- Section + Question -->
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div>
+      <span>Entities/Section.cs · Question.cs</span>
+      <span class="code-lang">C#</span>
+    </div>
+    <pre><span class="kw">public class</span> <span class="cls">Section</span>
+{
+    <span class="kw">public int</span>     <span class="prop">SectionId</span>        { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span>     <span class="prop">MockTestId</span>       { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string</span>  <span class="prop">SectionName</span>      { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">default</span>!;
+    <span class="kw">public string?</span> <span class="prop">SubjectTag</span>       { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span>     <span class="prop">OrderIndex</span>       { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span>     <span class="prop">QuestionCount</span>    { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public decimal</span> <span class="prop">MarksPerQuestion</span> { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public decimal</span> <span class="prop">NegativeMarks</span>    { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+    <span class="kw">public</span> <span class="cls">MockTest</span>                <span class="prop">MockTest</span>  { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">default</span>!;
+    <span class="kw">public</span> ICollection&lt;<span class="cls">Question</span>&gt;   <span class="prop">Questions</span> { <span class="kw">get</span>; <span class="kw">set</span>; } = [];
+}
+
+<span class="kw">public class</span> <span class="cls">Question</span>
+{
+    <span class="kw">public int</span>             <span class="prop">QuestionId</span>      { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span>             <span class="prop">SectionId</span>       { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string</span>          <span class="prop">QuestionText</span>    { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">default</span>!;
+    <span class="kw">public string</span>          <span class="prop">OptionA</span>         { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">default</span>!;
+    <span class="kw">public string</span>          <span class="prop">OptionB</span>         { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">default</span>!;
+    <span class="kw">public string</span>          <span class="prop">OptionC</span>         { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">default</span>!;
+    <span class="kw">public string</span>          <span class="prop">OptionD</span>         { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">default</span>!;
+    <span class="kw">public char</span>            <span class="prop">CorrectOption</span>   { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string?</span>         <span class="prop">Explanation</span>     { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public</span> <span class="iface">DifficultyLevel?</span> <span class="prop">DifficultyLevel</span>{ <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span>             <span class="prop">OrderIndex</span>      { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public bool</span>            <span class="prop">IsActive</span>        { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">true</span>;
+
+    <span class="kw">public</span> <span class="cls">Section</span>                     <span class="prop">Section</span>     { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">default</span>!;
+    <span class="kw">public</span> ICollection&lt;<span class="cls">UserAnswer</span>&gt;    <span class="prop">UserAnswers</span> { <span class="kw">get</span>; <span class="kw">set</span>; } = [];
+}</pre>
+  </div>
+
+  <!-- UserAttempt + UserAnswer -->
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div>
+      <span>Entities/UserAttempt.cs · UserAnswer.cs</span>
+      <span class="code-lang">C#</span>
+    </div>
+    <pre><span class="kw">public class</span> <span class="cls">UserAttempt</span>
+{
+    <span class="kw">public int</span>          <span class="prop">AttemptId</span>    { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span>          <span class="prop">UserId</span>       { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span>          <span class="prop">MockTestId</span>   { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public DateTime</span>     <span class="prop">StartedAt</span>    { <span class="kw">get</span>; <span class="kw">set</span>; } = DateTime.UtcNow;
+    <span class="kw">public DateTime?</span>    <span class="prop">SubmittedAt</span>  { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public DateTime</span>     <span class="prop">ExpiresAt</span>    { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public decimal?</span>     <span class="prop">TotalScore</span>   { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int?</span>         <span class="prop">CorrectCount</span> { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int?</span>         <span class="prop">WrongCount</span>   { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int?</span>         <span class="prop">SkippedCount</span> { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public decimal?</span>     <span class="prop">Percentage</span>   { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public</span> <span class="iface">AttemptStatus</span> <span class="prop">Status</span>      { <span class="kw">get</span>; <span class="kw">set</span>; } = AttemptStatus.InProgress;
+
+    <span class="kw">public</span> <span class="cls">MockTest</span>                    <span class="prop">MockTest</span>    { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">default</span>!;
+    <span class="kw">public</span> ICollection&lt;<span class="cls">UserAnswer</span>&gt;    <span class="prop">UserAnswers</span> { <span class="kw">get</span>; <span class="kw">set</span>; } = [];
+}
+
+<span class="kw">public class</span> <span class="cls">UserAnswer</span>
+{
+    <span class="kw">public int</span>      <span class="prop">AnswerId</span>           { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span>      <span class="prop">AttemptId</span>          { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span>      <span class="prop">QuestionId</span>         { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public char?</span>    <span class="prop">SelectedOption</span>     { <span class="kw">get</span>; <span class="kw">set</span>; }  <span class="cmt">// null = skipped</span>
+    <span class="kw">public bool?</span>    <span class="prop">IsCorrect</span>          { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public decimal?</span> <span class="prop">MarksAwarded</span>       { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public bool</span>     <span class="prop">IsMarkedForReview</span>  { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public DateTime?</span> <span class="prop">AnsweredAt</span>        { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+    <span class="kw">public</span> <span class="cls">UserAttempt</span> <span class="prop">UserAttempt</span> { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">default</span>!;
+    <span class="kw">public</span> <span class="cls">Question</span>    <span class="prop">Question</span>    { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">default</span>!;
+}</pre>
+  </div>
+</div>
+
+<!-- ══ SECTION 6 : DBCONTEXT ═══════════════════════════════════════ -->
+<div class="section" id="s6">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <span class="section-title">Infrastructure — DbContext & Fluent Config</span>
+    <span class="section-badge badge-core">Phase 3</span>
+  </div>
+
+  <!-- DbContext additions -->
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div>
+      <span>Persistence/ApplicationDbContext.cs — add these DbSets</span>
+      <span class="code-lang">C#</span>
+    </div>
+    <pre><span class="cmt">// Add inside your existing ApplicationDbContext class:</span>
+
+<span class="kw">public</span> DbSet&lt;<span class="cls">Exam</span>&gt;        <span class="prop">Exams</span>        { <span class="kw">get</span>; <span class="kw">set</span>; }
+<span class="kw">public</span> DbSet&lt;<span class="cls">MockTest</span>&gt;    <span class="prop">MockTests</span>    { <span class="kw">get</span>; <span class="kw">set</span>; }
+<span class="kw">public</span> DbSet&lt;<span class="cls">Section</span>&gt;     <span class="prop">Sections</span>     { <span class="kw">get</span>; <span class="kw">set</span>; }
+<span class="kw">public</span> DbSet&lt;<span class="cls">Question</span>&gt;    <span class="prop">Questions</span>    { <span class="kw">get</span>; <span class="kw">set</span>; }
+<span class="kw">public</span> DbSet&lt;<span class="cls">UserAttempt</span>&gt; <span class="prop">UserAttempts</span> { <span class="kw">get</span>; <span class="kw">set</span>; }
+<span class="kw">public</span> DbSet&lt;<span class="cls">UserAnswer</span>&gt;  <span class="prop">UserAnswers</span>  { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+<span class="cmt">// In OnModelCreating, apply all configurations:</span>
+<span class="kw">protected override void</span> <span class="attr">OnModelCreating</span>(<span class="cls">ModelBuilder</span> modelBuilder)
+{
+    <span class="kw">base</span>.OnModelCreating(modelBuilder);
+    modelBuilder.ApplyConfigurationsFromAssembly(
+        typeof(<span class="cls">ApplicationDbContext</span>).Assembly);
+}</pre>
+  </div>
+
+  <!-- EF Config for MockTest -->
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div>
+      <span>Configurations/MockTestConfiguration.cs</span>
+      <span class="code-lang">C#</span>
+    </div>
+    <pre><span class="kw">public class</span> <span class="cls">MockTestConfiguration</span> : <span class="iface">IEntityTypeConfiguration</span>&lt;<span class="cls">MockTest</span>&gt;
+{
+    <span class="kw">public void</span> <span class="attr">Configure</span>(<span class="cls">EntityTypeBuilder</span>&lt;<span class="cls">MockTest</span>&gt; builder)
+    {
+        builder.ToTable(<span class="str">"MockTests"</span>);
+        builder.HasKey(x => x.MockTestId);
+
+        builder.Property(x => x.Title)
+               .IsRequired().HasMaxLength(<span class="num">200</span>);
+
+        builder.Property(x => x.PaperType)
+               .IsRequired()
+               .HasConversion&lt;<span class="kw">string</span>&gt;()    <span class="cmt">// stores "Prelim"/"Mains" as string</span>
+               .HasMaxLength(<span class="num">20</span>);
+
+        builder.Property(x => x.PassingMarks)
+               .HasColumnType(<span class="str">"decimal(6,2)"</span>);
+
+        builder.Property(x => x.CreatedAt)
+               .HasDefaultValueSql(<span class="str">"GETUTCDATE()"</span>);
+
+        builder.HasOne(x => x.Exam)
+               .WithMany(e => e.MockTests)
+               .HasForeignKey(x => x.ExamId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => x.ExamId);
+    }
+}</pre>
+  </div>
+
+  <!-- EF Config for UserAttempt -->
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div>
+      <span>Configurations/UserAttemptConfiguration.cs</span>
+      <span class="code-lang">C#</span>
+    </div>
+    <pre><span class="kw">public class</span> <span class="cls">UserAttemptConfiguration</span> : <span class="iface">IEntityTypeConfiguration</span>&lt;<span class="cls">UserAttempt</span>&gt;
+{
+    <span class="kw">public void</span> <span class="attr">Configure</span>(<span class="cls">EntityTypeBuilder</span>&lt;<span class="cls">UserAttempt</span>&gt; builder)
+    {
+        builder.ToTable(<span class="str">"UserAttempts"</span>);
+        builder.HasKey(x => x.AttemptId);
+
+        builder.Property(x => x.Status)
+               .HasConversion&lt;<span class="kw">string</span>&gt;()
+               .HasMaxLength(<span class="num">20</span>);
+
+        builder.Property(x => x.TotalScore).HasColumnType(<span class="str">"decimal(8,2)"</span>);
+        builder.Property(x => x.Percentage).HasColumnType(<span class="str">"decimal(5,2)"</span>);
+
+        <span class="cmt">// One attempt per user per test (relaxed with a unique index)</span>
+        builder.HasIndex(x => <span class="kw">new</span> { x.UserId, x.MockTestId })
+               .IsUnique(<span class="kw">false</span>);  <span class="cmt">// set true if you want 1-attempt limit</span>
+
+        builder.HasOne(x => x.MockTest)
+               .WithMany(m => m.UserAttempts)
+               .HasForeignKey(x => x.MockTestId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => x.UserId);
+        builder.HasIndex(x => x.MockTestId);
+    }
+}</pre>
+  </div>
+
+  <!-- EF Config UserAnswer -->
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div>
+      <span>Configurations/UserAnswerConfiguration.cs</span>
+      <span class="code-lang">C#</span>
+    </div>
+    <pre><span class="kw">public class</span> <span class="cls">UserAnswerConfiguration</span> : <span class="iface">IEntityTypeConfiguration</span>&lt;<span class="cls">UserAnswer</span>&gt;
+{
+    <span class="kw">public void</span> <span class="attr">Configure</span>(<span class="cls">EntityTypeBuilder</span>&lt;<span class="cls">UserAnswer</span>&gt; builder)
+    {
+        builder.ToTable(<span class="str">"UserAnswers"</span>);
+        builder.HasKey(x => x.AnswerId);
+
+        builder.Property(x => x.SelectedOption).HasMaxLength(<span class="num">1</span>);
+        builder.Property(x => x.MarksAwarded).HasColumnType(<span class="str">"decimal(6,2)"</span>);
+
+        <span class="cmt">// One answer row per question per attempt</span>
+        builder.HasIndex(x => <span class="kw">new</span> { x.AttemptId, x.QuestionId }).IsUnique();
+
+        builder.HasOne(x => x.UserAttempt)
+               .WithMany(a => a.UserAnswers)
+               .HasForeignKey(x => x.AttemptId)
+               .OnDelete(DeleteBehavior.Cascade); <span class="cmt">// delete answers with attempt</span>
+
+        builder.HasOne(x => x.Question)
+               .WithMany(q => q.UserAnswers)
+               .HasForeignKey(x => x.QuestionId)
+               .OnDelete(DeleteBehavior.Restrict);
+    }
+}</pre>
+  </div>
+</div>
+
+<!-- ══ SECTION 7 : MIGRATIONS ════════════════════════════════════════ -->
+<div class="section" id="s7">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <span class="section-title">EF Core Migration Commands</span>
+    <span class="section-badge badge-core">Phase 3</span>
+  </div>
+  <div class="callout warn">
+    <span class="callout-icon">⚠</span>
+    <span>Run these from the solution root using Package Manager Console or terminal. The <code>--project</code> flag points to Infrastructure, <code>--startup-project</code> points to API.</span>
+  </div>
+  <div class="mig-steps">
+    <div class="mig-card">
+      <div class="mig-n">01</div>
+      <div class="mig-title">Add migration</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text2);margin-bottom:4px">After adding all entities & configs</div>
+      <div class="mig-cmd">dotnet ef migrations add AddMockTestModule --project SPSCReady.Infrastructure --startup-project SPSCReady.API</div>
+    </div>
+    <div class="mig-card">
+      <div class="mig-n">02</div>
+      <div class="mig-title">Review migration</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text2);margin-bottom:4px">Check generated SQL before applying</div>
+      <div class="mig-cmd">dotnet ef migrations script --project SPSCReady.Infrastructure --startup-project SPSCReady.API</div>
+    </div>
+    <div class="mig-card">
+      <div class="mig-n">03</div>
+      <div class="mig-title">Apply to DB</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text2);margin-bottom:4px">Creates tables in SSMS</div>
+      <div class="mig-cmd">dotnet ef database update --project SPSCReady.Infrastructure --startup-project SPSCReady.API</div>
+    </div>
+    <div class="mig-card">
+      <div class="mig-n">04</div>
+      <div class="mig-title">Rollback if needed</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text2);margin-bottom:4px">Go back to last stable migration</div>
+      <div class="mig-cmd">dotnet ef database update PreviousMigrationName --project SPSCReady.Infrastructure --startup-project SPSCReady.API</div>
+    </div>
+  </div>
+  <div class="callout tip" style="margin-top:16px">
+    <span class="callout-icon">💡</span>
+    <span>Register DbContext in your DI (Program.cs / InfrastructureServiceRegistration.cs): <br><code>services.AddDbContext&lt;ApplicationDbContext&gt;(opt => opt.UseSqlServer(config.GetConnectionString("DefaultConnection")));</code></span>
+  </div>
+</div>
+
+<!-- ══ SECTION 8 : DTOs ════════════════════════════════════════════ -->
+<div class="section" id="s8">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <span class="section-title">Application Layer — DTOs & Service Interfaces</span>
+    <span class="section-badge badge-api">Phase 4</span>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div>
+      <span>DTOs — MockTestDetailDto · SubmitAttemptRequestDto · AttemptResultDto</span>
+      <span class="code-lang">C#</span>
+    </div>
+    <pre><span class="cmt">// Returned when Flutter loads the test screen</span>
+<span class="kw">public record</span> <span class="cls">MockTestDetailDto</span>(
+    <span class="kw">int</span>    MockTestId,
+    <span class="kw">string</span> Title,
+    <span class="kw">string</span> PaperType,
+    <span class="kw">int</span>    DurationMinutes,
+    <span class="kw">int</span>    TotalMarks,
+    <span class="kw">int</span>    TotalQuestions,
+    List&lt;<span class="cls">SectionWithQuestionsDto</span>&gt; Sections
+);
+
+<span class="kw">public record</span> <span class="cls">SectionWithQuestionsDto</span>(
+    <span class="kw">int</span>    SectionId,
+    <span class="kw">string</span> SectionName,
+    <span class="kw">int</span>    OrderIndex,
+    <span class="kw">decimal</span> MarksPerQuestion,
+    <span class="kw">decimal</span> NegativeMarks,
+    List&lt;<span class="cls">QuestionDto</span>&gt; Questions
+);
+
+<span class="kw">public record</span> <span class="cls">QuestionDto</span>(
+    <span class="kw">int</span>    QuestionId,
+    <span class="kw">string</span> QuestionText,
+    <span class="kw">string</span> OptionA,
+    <span class="kw">string</span> OptionB,
+    <span class="kw">string</span> OptionC,
+    <span class="kw">string</span> OptionD,
+    <span class="kw">int</span>    OrderIndex
+    <span class="cmt">// CorrectOption NOT included — never sent to client!</span>
+);
+
+<span class="cmt">// Sent by Flutter when user submits</span>
+<span class="kw">public record</span> <span class="cls">SubmitAttemptRequestDto</span>(
+    <span class="kw">int</span>  AttemptId,
+    List&lt;<span class="cls">AnswerSubmitDto</span>&gt; Answers
+);
+
+<span class="kw">public record</span> <span class="cls">AnswerSubmitDto</span>(
+    <span class="kw">int</span>    QuestionId,
+    <span class="kw">char?</span>  SelectedOption,       <span class="cmt">// null = skipped</span>
+    <span class="kw">bool</span>   IsMarkedForReview
+);
+
+<span class="cmt">// Returned after submission (result screen)</span>
+<span class="kw">public record</span> <span class="cls">AttemptResultDto</span>(
+    <span class="kw">int</span>     AttemptId,
+    <span class="kw">string</span>  MockTestTitle,
+    <span class="kw">decimal</span> TotalScore,
+    <span class="kw">int</span>     TotalMarks,
+    <span class="kw">decimal</span> Percentage,
+    <span class="kw">int</span>     CorrectCount,
+    <span class="kw">int</span>     WrongCount,
+    <span class="kw">int</span>     SkippedCount,
+    <span class="kw">bool</span>    IsPassed,
+    List&lt;<span class="cls">SectionResultDto</span>&gt; SectionBreakdown,
+    List&lt;<span class="cls">AnswerReviewDto</span>&gt;  AnswerReview      <span class="cmt">// includes correct answers</span>
+);
+
+<span class="kw">public record</span> <span class="cls">AnswerReviewDto</span>(
+    <span class="kw">int</span>    QuestionId,
+    <span class="kw">string</span> QuestionText,
+    <span class="kw">char?</span>  SelectedOption,
+    <span class="kw">char</span>   CorrectOption,
+    <span class="kw">bool</span>   IsCorrect,
+    <span class="kw">string?</span> Explanation
+);</pre>
+  </div>
+
+  <!-- IMockTestService -->
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div>
+      <span>Interfaces/IMockTestService.cs · IAttemptService.cs</span>
+      <span class="code-lang">C#</span>
+    </div>
+    <pre><span class="kw">public interface</span> <span class="iface">IMockTestService</span>
+{
+    Task&lt;List&lt;<span class="cls">ExamDto</span>&gt;&gt;           <span class="attr">GetActiveExamsAsync</span>();
+    Task&lt;List&lt;<span class="cls">MockTestDto</span>&gt;&gt;       <span class="attr">GetMockTestsByExamAsync</span>(<span class="kw">int</span> examId);
+    Task&lt;<span class="cls">MockTestDetailDto</span>?&gt;      <span class="attr">GetMockTestDetailAsync</span>(<span class="kw">int</span> mockTestId);
+}
+
+<span class="kw">public interface</span> <span class="iface">IAttemptService</span>
+{
+    Task&lt;<span class="cls">StartAttemptResponseDto</span>&gt;  <span class="attr">StartAttemptAsync</span>(<span class="kw">int</span> userId, <span class="kw">int</span> mockTestId);
+    Task&lt;<span class="cls">AttemptResultDto</span>&gt;         <span class="attr">SubmitAttemptAsync</span>(<span class="cls">SubmitAttemptRequestDto</span> dto, <span class="kw">int</span> userId);
+    Task&lt;<span class="cls">AttemptResultDto</span>?&gt;        <span class="attr">GetAttemptResultAsync</span>(<span class="kw">int</span> attemptId, <span class="kw">int</span> userId);
+    Task&lt;List&lt;<span class="cls">AttemptSummaryDto</span>&gt;&gt; <span class="attr">GetUserAttemptsAsync</span>(<span class="kw">int</span> userId);
+}</pre>
+  </div>
+</div>
+
+<!-- ══ SECTION 9 : API ENDPOINTS ═════════════════════════════════════ -->
+<div class="section" id="s9">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <span class="section-title">All API Endpoints</span>
+    <span class="section-badge badge-api">Phase 5</span>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">ℹ</span>
+    <span>All endpoints prefixed with <code>/api/v1</code>. <span class="auth-tag">AUTH</span> = requires JWT Bearer token from your existing auth system. <span style="font-family:var(--mono);font-size:11px;background:rgba(45,202,115,.12);color:var(--green);border:1px solid rgba(45,202,115,.25);padding:2px 6px;border-radius:3px">PUBLIC</span> = no auth needed.</span>
+  </div>
+
+  <!-- Exams Controller -->
+  <div style="margin-bottom:8px;font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;padding-left:2px">// ExamsController</div>
+  <div class="code-block" style="margin-bottom:24px">
+    <table class="api-table">
+      <thead>
+        <tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="method GET">GET</span></td>
+          <td class="endpoint">/api/v1/exams</td>
+          <td class="api-desc">List all active exams (for home screen)</td>
+          <td><span style="font-family:var(--mono);font-size:10px;background:rgba(45,202,115,.12);color:var(--green);border:1px solid rgba(45,202,115,.25);padding:2px 6px;border-radius:3px">PUBLIC</span></td>
+        </tr>
+        <tr>
+          <td><span class="method GET">GET</span></td>
+          <td class="endpoint">/api/v1/exams/{examId}/mocktests</td>
+          <td class="api-desc">List all mock tests for an exam (grouped Prelim/Mains)</td>
+          <td><span style="font-family:var(--mono);font-size:10px;background:rgba(45,202,115,.12);color:var(--green);border:1px solid rgba(45,202,115,.25);padding:2px 6px;border-radius:3px">PUBLIC</span></td>
+        </tr>
+        <tr>
+          <td><span class="method POST">POST</span></td>
+          <td class="endpoint">/api/v1/exams</td>
+          <td class="api-desc">Create a new exam (admin only)</td>
+          <td><span class="auth-tag">AUTH</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- MockTests Controller -->
+  <div style="margin-bottom:8px;font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;padding-left:2px">// MockTestsController</div>
+  <div class="code-block" style="margin-bottom:24px">
+    <table class="api-table">
+      <thead>
+        <tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="method GET">GET</span></td>
+          <td class="endpoint">/api/v1/mocktests/{mockTestId}</td>
+          <td class="api-desc">Get full paper with sections + questions (no correct answers)</td>
+          <td><span class="auth-tag">AUTH</span></td>
+        </tr>
+        <tr>
+          <td><span class="method POST">POST</span></td>
+          <td class="endpoint">/api/v1/mocktests</td>
+          <td class="api-desc">Create a mock test under an exam (admin)</td>
+          <td><span class="auth-tag">AUTH</span></td>
+        </tr>
+        <tr>
+          <td><span class="method POST">POST</span></td>
+          <td class="endpoint">/api/v1/mocktests/{mockTestId}/questions</td>
+          <td class="api-desc">Bulk add questions to a section (admin)</td>
+          <td><span class="auth-tag">AUTH</span></td>
+        </tr>
+        <tr>
+          <td><span class="method PUT">PUT</span></td>
+          <td class="endpoint">/api/v1/mocktests/{mockTestId}</td>
+          <td class="api-desc">Update mock test metadata (admin)</td>
+          <td><span class="auth-tag">AUTH</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Attempts Controller -->
+  <div style="margin-bottom:8px;font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;padding-left:2px">// AttemptsController</div>
+  <div class="code-block">
+    <table class="api-table">
+      <thead>
+        <tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="method POST">POST</span></td>
+          <td class="endpoint">/api/v1/attempts/start</td>
+          <td class="api-desc">Start attempt — creates UserAttempt row, returns AttemptId + ExpiresAt</td>
+          <td><span class="auth-tag">AUTH</span></td>
+        </tr>
+        <tr>
+          <td><span class="method POST">POST</span></td>
+          <td class="endpoint">/api/v1/attempts/{attemptId}/submit</td>
+          <td class="api-desc">Submit all answers — scores the attempt, stores UserAnswers, returns result</td>
+          <td><span class="auth-tag">AUTH</span></td>
+        </tr>
+        <tr>
+          <td><span class="method GET">GET</span></td>
+          <td class="endpoint">/api/v1/attempts/{attemptId}/result</td>
+          <td class="api-desc">Get result for a submitted attempt (result screen)</td>
+          <td><span class="auth-tag">AUTH</span></td>
+        </tr>
+        <tr>
+          <td><span class="method GET">GET</span></td>
+          <td class="endpoint">/api/v1/attempts/my</td>
+          <td class="api-desc">Get all attempts for current user (history screen)</td>
+          <td><span class="auth-tag">AUTH</span></td>
+        </tr>
+        <tr>
+          <td><span class="method PUT">PUT</span></td>
+          <td class="endpoint">/api/v1/attempts/{attemptId}/expire</td>
+          <td class="api-desc">Mark attempt as Expired when timer runs out (called by Flutter)</td>
+          <td><span class="auth-tag">AUTH</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Scoring logic callout -->
+  <div class="callout tip" style="margin-top:16px">
+    <span class="callout-icon">💡</span>
+    <span><strong>Scoring logic in AttemptService.SubmitAttemptAsync:</strong><br>
+    For each answer: load Question (with SectionId) → load Section (MarksPerQuestion, NegativeMarks)<br>
+    If SelectedOption == CorrectOption → MarksAwarded = MarksPerQuestion<br>
+    If SelectedOption != null &amp;&amp; != CorrectOption → MarksAwarded = -NegativeMarks<br>
+    If SelectedOption == null → MarksAwarded = 0 (skipped)<br>
+    TotalScore = SUM(MarksAwarded), Percentage = (TotalScore / TotalMarks) × 100</span>
+  </div>
+</div>
+
+<!-- ══ SECTION 10 : CHECKLIST ════════════════════════════════════════ -->
+<div class="section" id="s10">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <span class="section-title">Implementation Checklist — In Order</span>
+    <span class="section-badge badge-test">Do This</span>
+  </div>
+
+  <div class="checklist">
+    <div class="check-item"><div class="check-box">1</div><span><strong style="color:var(--text)">Domain:</strong> Create Enums (PaperType, AttemptStatus, DifficultyLevel) → Entities (Exam, MockTest, Section, Question, UserAttempt, UserAnswer)</span></div>
+    <div class="check-item"><div class="check-box">2</div><span><strong style="color:var(--text)">Infrastructure:</strong> Add 6 DbSets to ApplicationDbContext + ApplyConfigurationsFromAssembly</span></div>
+    <div class="check-item"><div class="check-box">3</div><span><strong style="color:var(--text)">Infrastructure:</strong> Create 6 Fluent API configuration classes (one per entity)</span></div>
+    <div class="check-item"><div class="check-box">4</div><span><strong style="color:var(--text)">Migration:</strong> Run <code>dotnet ef migrations add AddMockTestModule</code> — review generated SQL script</span></div>
+    <div class="check-item"><div class="check-box">5</div><span><strong style="color:var(--text)">Migration:</strong> Run <code>dotnet ef database update</code> — verify tables in SSMS</span></div>
+    <div class="check-item"><div class="check-box">6</div><span><strong style="color:var(--text)">Application:</strong> Create all DTOs (record types), interface IAttemptService, IMockTestService</span></div>
+    <div class="check-item"><div class="check-box">7</div><span><strong style="color:var(--text)">Infrastructure:</strong> Implement repositories (ExamRepository, MockTestRepository, AttemptRepository)</span></div>
+    <div class="check-item"><div class="check-box">8</div><span><strong style="color:var(--text)">Application:</strong> Implement MockTestService (GetExams, GetMockTestDetail — maps to DTOs)</span></div>
+    <div class="check-item"><div class="check-box">9</div><span><strong style="color:var(--text)">Application:</strong> Implement AttemptService.StartAttemptAsync — create UserAttempt row, set ExpiresAt = StartedAt + DurationMinutes</span></div>
+    <div class="check-item"><div class="check-box">10</div><span><strong style="color:var(--text)">Application:</strong> Implement AttemptService.SubmitAttemptAsync — bulk insert UserAnswers, run scoring loop, update UserAttempt totals</span></div>
+    <div class="check-item"><div class="check-box">11</div><span><strong style="color:var(--text)">DI Registration:</strong> Register all services and repositories in your ServiceRegistration extension</span></div>
+    <div class="check-item"><div class="check-box">12</div><span><strong style="color:var(--text)">API:</strong> Create ExamsController, MockTestsController, AttemptsController with all 9 endpoints</span></div>
+    <div class="check-item"><div class="check-box">13</div><span><strong style="color:var(--text)">Seed Data:</strong> Add SI 2025 exam + 5 mock tests via migration seed or SQL script</span></div>
+    <div class="check-item"><div class="check-box">14</div><span><strong style="color:var(--text)">Test:</strong> Postman — hit GET /exams, then start an attempt, submit 5 answers, verify result JSON</span></div>
+    <div class="check-item"><div class="check-box">15</div><span><strong style="color:var(--text)">Flutter:</strong> Wire up Dart models to API response shapes — start with AttemptResultDto</span></div>
+  </div>
+
+  <div class="callout danger" style="margin-top:20px">
+    <span class="callout-icon">🚨</span>
+    <span><strong>Critical: Never send CorrectOption in GET /mocktests/{id}</strong> — only include it in the result endpoint after the attempt is Submitted. The QuestionDto for the test screen must exclude it.</span>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<div class="divider"></div>
+<div style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3);padding-bottom:24px">
+  SPSCReady Mock Test Module · Backend Roadmap v1.0 · Built for ASP.NET 8 Clean Architecture + EF Core 8
+</div>
+
+</body>
+</html>
