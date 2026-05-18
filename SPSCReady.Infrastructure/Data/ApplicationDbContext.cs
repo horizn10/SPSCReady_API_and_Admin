@@ -18,9 +18,20 @@ namespace SPSCReady.Infrastructure.Data
         public DbSet<ExamPaperStage> ExamPaperStages { get; set; }
         public DbSet<ExamPaperSubject> ExamPaperSubjects { get; set; }
 
+        // MockTest Module DbSets
+        public DbSet<Exam> Exams { get; set; }
+        public DbSet<MockTest> MockTests { get; set; }
+        public DbSet<Section> Sections { get; set; }
+        public DbSet<Question> Questions { get; set; }
+        public DbSet<UserAttempt> UserAttempts { get; set; }
+        public DbSet<UserAnswer> UserAnswers { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            // Apply all entity configurations from this assembly
+            builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
             // Post -> Department
             builder.Entity<Post>()
