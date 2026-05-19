@@ -8,7 +8,7 @@ public class UserAttemptConfiguration : IEntityTypeConfiguration<UserAttempt>
 {
     public void Configure(EntityTypeBuilder<UserAttempt> builder)
     {
-        builder.ToTable("UserAttempts");
+        builder.ToTable("MockUserAttempts");
         builder.HasKey(x => x.AttemptId);
 
         builder.Property(x => x.UserId)

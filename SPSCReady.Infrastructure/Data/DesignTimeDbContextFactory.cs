@@ -9,7 +9,7 @@ namespace SPSCReady.Infrastructure.Data
         public ApplicationDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-optionsBuilder.UseSqlServer("Server=localhost;Database=testdb;Trusted_Connection=true;TrustServerCertificate=true;");
+optionsBuilder.UseSqlServer("Server=localhost;Database=SPSCReadyDb;Trusted_Connection=true;TrustServerCertificate=true;");
             return new ApplicationDbContext(optionsBuilder.Options);
         }
     }

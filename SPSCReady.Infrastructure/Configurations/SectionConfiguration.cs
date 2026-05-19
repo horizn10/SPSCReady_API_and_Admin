@@ -8,7 +8,7 @@ public class SectionConfiguration : IEntityTypeConfiguration<Section>
 {
     public void Configure(EntityTypeBuilder<Section> builder)
     {
-        builder.ToTable("Sections");
+        builder.ToTable("MockSections");
         builder.HasKey(x => x.SectionId);
 
         builder.Property(x => x.SectionName)
