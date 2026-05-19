@@ -74,6 +74,26 @@ namespace SPSCReady.Infrastructure.Services
             };
         }
 
+        // --- GET USER PROFILE METHOD ---
+        public async Task<UserProfileDto?> GetUserProfileAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            return new UserProfileDto
+            {
+                Id = user.Id,
+                FullName = $"{user.FirstName} {user.LastName}".Trim(),
+                PhoneNumber = user.PhoneNumber ?? string.Empty,
+                Email = user.Email ?? string.Empty,
+                AccountStatus = "Active Member"
+            };
+        }
+
         // --- JWT HELPER METHOD ---
         private string GenerateJwtToken(ApplicationUser user)
         {
