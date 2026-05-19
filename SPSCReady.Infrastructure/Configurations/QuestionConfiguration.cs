@@ -8,7 +8,7 @@ public class QuestionConfiguration : IEntityTypeConfiguration<Question>
 {
     public void Configure(EntityTypeBuilder<Question> builder)
     {
-        builder.ToTable("Questions");
+        builder.ToTable("MockQuestions");
         builder.HasKey(x => x.QuestionId);
 
         builder.Property(x => x.QuestionText)

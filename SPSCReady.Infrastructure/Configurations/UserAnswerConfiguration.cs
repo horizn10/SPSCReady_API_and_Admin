@@ -8,7 +8,7 @@ public class UserAnswerConfiguration : IEntityTypeConfiguration<UserAnswer>
 {
     public void Configure(EntityTypeBuilder<UserAnswer> builder)
     {
-        builder.ToTable("UserAnswers");
+        builder.ToTable("MockUserAnswers");
         builder.HasKey(x => x.AnswerId);
 
         builder.Property(x => x.AttemptId)
