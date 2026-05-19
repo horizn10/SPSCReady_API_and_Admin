@@ -9,5 +9,7 @@ namespace SPSCReady.Application.Interfaces
         Task<(bool Succeeded, IEnumerable<string> Errors)> RegisterAsync(RegisterRequestDto request);
 
         Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
+
+        Task<UserProfileDto?> GetUserProfileAsync(string userId);
     }
 }

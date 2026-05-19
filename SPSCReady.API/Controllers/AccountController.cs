@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SPSCReady.Application.DTOs;
 using SPSCReady.Application.Interfaces;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace SPSCReady.API.Controllers
@@ -50,6 +52,28 @@ namespace SPSCReady.API.Controllers
             }
 
             return Unauthorized(new { message = response.Message });
+        }
+
+        [Authorize]
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetProfile()
+        {
+            // Extract the user ID from the JWT token claims
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { message = "User ID not found in token" });
+            }
+
+            var userProfile = await _accountService.GetUserProfileAsync(userId);
+
+            if (userProfile == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            return Ok(userProfile);
         }
     }
 }
