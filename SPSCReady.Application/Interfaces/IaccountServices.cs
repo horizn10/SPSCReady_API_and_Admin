@@ -9,5 +9,10 @@ namespace SPSCReady.Application.Interfaces
         Task<(bool Succeeded, IEnumerable<string> Errors)> RegisterAsync(RegisterRequestDto request);
 
         Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
+
+        // OTP Login Methods
+        Task<(bool Success, string Message)> SendOtpAsync(OtpRequestDto request);
+
+        Task<LoginResponseDto> VerifyOtpAndLoginAsync(OtpVerifyDto request);
     }
 }

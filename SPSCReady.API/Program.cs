@@ -82,7 +82,8 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!)),
+        NameClaimType = System.Security.Claims.ClaimTypes.NameIdentifier
     };
 });
 
@@ -98,6 +99,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPaperService, PaperService>();
 builder.Services.AddSingleton<IR2StorageService, R2StorageService>();
 
@@ -133,7 +135,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseCors("AllowAll");
-app.UseStaticFiles();
 app.MapControllers();
 
 app.Run();
