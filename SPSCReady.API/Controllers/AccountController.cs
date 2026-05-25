@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SPSCReady.Application.DTOs;
 using SPSCReady.Application.Interfaces;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace SPSCReady.API.Controllers

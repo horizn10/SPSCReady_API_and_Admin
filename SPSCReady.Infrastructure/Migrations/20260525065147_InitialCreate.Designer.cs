@@ -12,8 +12,8 @@ using SPSCReady.Infrastructure.Data;
 namespace SPSCReady.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260417113446_InitialDesign")]
-    partial class InitialDesign
+    [Migration("20260525065147_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -258,6 +258,49 @@ namespace SPSCReady.Infrastructure.Migrations
                     b.ToTable("Departments");
                 });
 
+            modelBuilder.Entity("SPSCReady.Domain.Entities.Exam", b =>
+                {
+                    b.Property<int>("ExamId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExamId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(-1)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExamCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ExamName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("ExamYear")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.HasKey("ExamId");
+
+                    b.HasIndex("ExamCode")
+                        .IsUnique();
+
+                    b.ToTable("MockExams", (string)null);
+                });
+
             modelBuilder.Entity("SPSCReady.Domain.Entities.ExamPaper", b =>
                 {
                     b.Property<int>("Id")
@@ -413,6 +456,89 @@ namespace SPSCReady.Infrastructure.Migrations
                     b.ToTable("ExamStages");
                 });
 
+            modelBuilder.Entity("SPSCReady.Domain.Entities.MockTest", b =>
+                {
+                    b.Property<int>("MockTestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MockTestId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("PaperNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaperType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal?>("PassingMarks")
+                        .HasColumnType("decimal(6,2)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("TotalMarks")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalQuestions")
+                        .HasColumnType("int");
+
+                    b.HasKey("MockTestId");
+
+                    b.HasIndex("ExamId");
+
+                    b.ToTable("MockTests", (string)null);
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.OtpToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OtpTokens");
+                });
+
             modelBuilder.Entity("SPSCReady.Domain.Entities.Post", b =>
                 {
                     b.Property<int>("Id")
@@ -435,6 +561,109 @@ namespace SPSCReady.Infrastructure.Migrations
                     b.ToTable("Posts");
                 });
 
+            modelBuilder.Entity("SPSCReady.Domain.Entities.Question", b =>
+                {
+                    b.Property<int>("QuestionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuestionId"));
+
+                    b.Property<string>("CorrectOption")
+                        .IsRequired()
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<string>("DifficultyLevel")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Explanation")
+                        .HasMaxLength(-1)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("OptionA")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("OptionB")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("OptionC")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("OptionD")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("int");
+
+                    b.Property<string>("QuestionText")
+                        .IsRequired()
+                        .HasMaxLength(-1)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SectionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("QuestionId");
+
+                    b.HasIndex("SectionId");
+
+                    b.ToTable("MockQuestions", (string)null);
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.Section", b =>
+                {
+                    b.Property<int>("SectionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SectionId"));
+
+                    b.Property<decimal>("MarksPerQuestion")
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<int>("MockTestId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("NegativeMarks")
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QuestionCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SectionName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SubjectTag")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("SectionId");
+
+                    b.HasIndex("MockTestId");
+
+                    b.ToTable("MockSections", (string)null);
+                });
+
             modelBuilder.Entity("SPSCReady.Domain.Entities.Subject", b =>
                 {
                     b.Property<int>("Id")
@@ -455,6 +684,106 @@ namespace SPSCReady.Infrastructure.Migrations
                     b.HasIndex("StageId");
 
                     b.ToTable("Subjects");
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.UserAnswer", b =>
+                {
+                    b.Property<int>("AnswerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnswerId"));
+
+                    b.Property<DateTime?>("AnsweredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("AttemptId")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("IsCorrect")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsMarkedForReview")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<decimal?>("MarksAwarded")
+                        .HasColumnType("decimal(6,2)");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SelectedOption")
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.HasKey("AnswerId");
+
+                    b.HasIndex("AttemptId");
+
+                    b.HasIndex("QuestionId");
+
+                    b.HasIndex("AttemptId", "QuestionId")
+                        .IsUnique();
+
+                    b.ToTable("MockUserAnswers", (string)null);
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.UserAttempt", b =>
+                {
+                    b.Property<int>("AttemptId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AttemptId"));
+
+                    b.Property<int?>("CorrectCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MockTestId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("Percentage")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int?>("SkippedCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("TotalScore")
+                        .HasColumnType("decimal(8,2)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("WrongCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("AttemptId");
+
+                    b.HasIndex("MockTestId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "MockTestId");
+
+                    b.ToTable("MockUserAttempts", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -592,6 +921,17 @@ namespace SPSCReady.Infrastructure.Migrations
                     b.Navigation("Subject");
                 });
 
+            modelBuilder.Entity("SPSCReady.Domain.Entities.MockTest", b =>
+                {
+                    b.HasOne("SPSCReady.Domain.Entities.Exam", "Exam")
+                        .WithMany("MockTests")
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Exam");
+                });
+
             modelBuilder.Entity("SPSCReady.Domain.Entities.Post", b =>
                 {
                     b.HasOne("SPSCReady.Domain.Entities.Department", "Department")
@@ -601,6 +941,28 @@ namespace SPSCReady.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.Question", b =>
+                {
+                    b.HasOne("SPSCReady.Domain.Entities.Section", "Section")
+                        .WithMany("Questions")
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Section");
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.Section", b =>
+                {
+                    b.HasOne("SPSCReady.Domain.Entities.MockTest", "MockTest")
+                        .WithMany("Sections")
+                        .HasForeignKey("MockTestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MockTest");
                 });
 
             modelBuilder.Entity("SPSCReady.Domain.Entities.Subject", b =>
@@ -614,9 +976,44 @@ namespace SPSCReady.Infrastructure.Migrations
                     b.Navigation("Stage");
                 });
 
+            modelBuilder.Entity("SPSCReady.Domain.Entities.UserAnswer", b =>
+                {
+                    b.HasOne("SPSCReady.Domain.Entities.UserAttempt", "UserAttempt")
+                        .WithMany("UserAnswers")
+                        .HasForeignKey("AttemptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SPSCReady.Domain.Entities.Question", "Question")
+                        .WithMany("UserAnswers")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Question");
+
+                    b.Navigation("UserAttempt");
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.UserAttempt", b =>
+                {
+                    b.HasOne("SPSCReady.Domain.Entities.MockTest", "MockTest")
+                        .WithMany("UserAttempts")
+                        .HasForeignKey("MockTestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MockTest");
+                });
+
             modelBuilder.Entity("SPSCReady.Domain.Entities.Department", b =>
                 {
                     b.Navigation("Posts");
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.Exam", b =>
+                {
+                    b.Navigation("MockTests");
                 });
 
             modelBuilder.Entity("SPSCReady.Domain.Entities.ExamPaper", b =>
@@ -628,6 +1025,28 @@ namespace SPSCReady.Infrastructure.Migrations
                     b.Navigation("Stages");
 
                     b.Navigation("Subjects");
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.MockTest", b =>
+                {
+                    b.Navigation("Sections");
+
+                    b.Navigation("UserAttempts");
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.Question", b =>
+                {
+                    b.Navigation("UserAnswers");
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.Section", b =>
+                {
+                    b.Navigation("Questions");
+                });
+
+            modelBuilder.Entity("SPSCReady.Domain.Entities.UserAttempt", b =>
+                {
+                    b.Navigation("UserAnswers");
                 });
 #pragma warning restore 612, 618
         }

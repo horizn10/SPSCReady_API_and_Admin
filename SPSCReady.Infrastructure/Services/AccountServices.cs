@@ -23,6 +23,9 @@ namespace SPSCReady.Infrastructure.Services
         private readonly ApplicationDbContext _dbContext;
         private readonly IEmailService _emailService;
 
+        // In-memory OTP storage: Email -> (OTP Code, Expiry Time)
+        private static readonly Dictionary<string, (string Code, DateTime Expiry)> _otpCache = new();
+
         public AccountService(
             UserManager<ApplicationUser> userManager, 
             IConfiguration configuration,
@@ -87,10 +90,21 @@ namespace SPSCReady.Infrastructure.Services
         // --- OTP LOGIN METHODS ---
         public async Task<(bool Success, string Message)> SendOtpAsync(OtpRequestDto request)
         {
+            if (request == null)
+                return (false, "Invalid request.");
+
             // Validate email
             if (string.IsNullOrWhiteSpace(request.Email))
-            {
                 return (false, "Email is required.");
+
+            // Basic email format validation to avoid wasting SMTP calls
+            try
+            {
+                _ = new System.Net.Mail.MailAddress(request.Email);
+            }
+            catch
+            {
+                return (false, "Invalid email format.");
             }
 
             // Check if user exists
@@ -104,42 +118,21 @@ namespace SPSCReady.Infrastructure.Services
             // Generate OTP (6-digit code)
             var otpCode = GenerateOtp();
 
-            // Delete any existing unexpired OTPs for this email
-            var existingOtps = await _dbContext.OtpTokens
-                .Where(o => o.Email == request.Email && !o.IsUsed && o.ExpiresAt > DateTime.UtcNow)
-                .ToListAsync();
-
-            if (existingOtps.Any())
-            {
-                _dbContext.OtpTokens.RemoveRange(existingOtps);
-            }
-
-            // Create new OTP token (valid for 10 minutes)
-            var otpToken = new OtpToken
-            {
-                Email = request.Email,
-                Code = otpCode,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(10),
-                IsUsed = false,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _dbContext.OtpTokens.Add(otpToken);
-            await _dbContext.SaveChangesAsync();
-
             // Send OTP via email
+            // NOTE: EmailService already logs SMTP exception details to Console.
+            // Here we keep the client-safe message.
             var emailSent = await _emailService.SendOtpEmailAsync(request.Email, otpCode);
-
             if (!emailSent)
             {
-                // Delete the OTP if email couldn't be sent
-                _dbContext.OtpTokens.Remove(otpToken);
-                await _dbContext.SaveChangesAsync();
                 return (false, "Failed to send OTP. Please try again.");
             }
 
+            // Store OTP in memory (valid for 10 minutes)
+            _otpCache[request.Email] = (otpCode, DateTime.UtcNow.AddMinutes(10));
+
             return (true, "OTP sent successfully to your email.");
         }
+
 
         public async Task<LoginResponseDto> VerifyOtpAndLoginAsync(OtpVerifyDto request)
         {
@@ -153,15 +146,8 @@ namespace SPSCReady.Infrastructure.Services
                 };
             }
 
-            // Find the OTP token
-            var otpToken = await _dbContext.OtpTokens
-                .FirstOrDefaultAsync(o => 
-                    o.Email == request.Email && 
-                    o.Code == request.Code && 
-                    !o.IsUsed &&
-                    o.ExpiresAt > DateTime.UtcNow);
-
-            if (otpToken == null)
+            // Check if OTP exists in cache
+            if (!_otpCache.TryGetValue(request.Email, out var otpData))
             {
                 return new LoginResponseDto
                 {
@@ -170,10 +156,29 @@ namespace SPSCReady.Infrastructure.Services
                 };
             }
 
-            // Mark OTP as used
-            otpToken.IsUsed = true;
-            _dbContext.OtpTokens.Update(otpToken);
-            await _dbContext.SaveChangesAsync();
+            // Check if OTP has expired
+            if (otpData.Expiry < DateTime.UtcNow)
+            {
+                _otpCache.Remove(request.Email);
+                return new LoginResponseDto
+                {
+                    IsSuccessful = false,
+                    Message = "Invalid or expired OTP."
+                };
+            }
+
+            // Verify OTP code
+            if (otpData.Code != request.Code)
+            {
+                return new LoginResponseDto
+                {
+                    IsSuccessful = false,
+                    Message = "Invalid or expired OTP."
+                };
+            }
+
+            // OTP is valid - remove it from cache (single-use)
+            _otpCache.Remove(request.Email);
 
             // Find the user
             var user = await _userManager.FindByEmailAsync(request.Email);
@@ -200,9 +205,14 @@ namespace SPSCReady.Infrastructure.Services
         // --- HELPER METHODS ---
         private string GenerateOtp()
         {
-            var random = new Random();
-            return random.Next(100000, 999999).ToString();
+            // Use cryptographically secure random
+            // Generates a 6-digit string in range [100000..999999]
+            var bytes = new byte[4];
+            System.Security.Cryptography.RandomNumberGenerator.Fill(bytes);
+            var value = BitConverter.ToUInt32(bytes, 0) % 900000; // 0..899999
+            return (value + 100000).ToString();
         }
+
 
         private string GenerateJwtToken(ApplicationUser user)
         {
