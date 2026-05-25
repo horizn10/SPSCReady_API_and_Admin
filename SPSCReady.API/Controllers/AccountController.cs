@@ -54,26 +54,46 @@ namespace SPSCReady.API.Controllers
             return Unauthorized(new { message = response.Message });
         }
 
-        [Authorize]
-        [HttpGet("profile")]
-        public async Task<IActionResult> GetProfile()
+        /// <summary>
+        /// Step 1: Send OTP to email for login
+        /// </summary>
+        [HttpPost("send-otp")]
+        public async Task<IActionResult> SendOtp([FromBody] OtpRequestDto request)
         {
-            // Extract the user ID from the JWT token claims
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userId))
+            if (!ModelState.IsValid)
             {
-                return Unauthorized(new { message = "User ID not found in token" });
+                return BadRequest(ModelState);
             }
 
-            var userProfile = await _accountService.GetUserProfileAsync(userId);
+            var (success, message) = await _accountService.SendOtpAsync(request);
 
-            if (userProfile == null)
+            if (success)
             {
-                return NotFound(new { message = "User not found" });
+                return Ok(new { success = true, message });
             }
 
-            return Ok(userProfile);
+            return BadRequest(new { success = false, message });
+        }
+
+        /// <summary>
+        /// Step 2: Verify OTP and login user
+        /// </summary>
+        [HttpPost("verify-otp-login")]
+        public async Task<IActionResult> VerifyOtpLogin([FromBody] OtpVerifyDto request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var response = await _accountService.VerifyOtpAndLoginAsync(request);
+
+            if (response.IsSuccessful)
+            {
+                return Ok(response); // Returns the token
+            }
+
+            return Unauthorized(new { message = response.Message });
         }
     }
 }

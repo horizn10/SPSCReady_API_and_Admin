@@ -12,6 +12,7 @@ namespace SPSCReady.Application.Interfaces
         Task<List<ExamStageDto>> GetExamStagesAsync();
         Task<List<ExamSubjectDto>> GetSubjectsAsync();
         Task<bool> UploadPaperAsync(IFormFile pdfFile, UploadPaperDto request);
+        Task<bool> MultiUploadPaperAsync(List<IFormFile> pdfFiles, MultiUploadPaperDto request, string webRootPath);
 
         Task<List<ExamPaperListDto>> GetPapersAsync(
             string? search = null,

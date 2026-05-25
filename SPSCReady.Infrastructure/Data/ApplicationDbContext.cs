@@ -26,6 +26,9 @@ namespace SPSCReady.Infrastructure.Data
         public DbSet<UserAttempt> UserAttempts { get; set; }
         public DbSet<UserAnswer> UserAnswers { get; set; }
 
+        // OTP Module DbSet
+        public DbSet<OtpToken> OtpTokens { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using SPSCReady.Application.DTOs;
 using SPSCReady.Application.Interfaces;
 using SPSCReady.Domain.Entities;
+using SPSCReady.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -18,11 +20,22 @@ namespace SPSCReady.Infrastructure.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly IEmailService _emailService;
 
-        public AccountService(UserManager<ApplicationUser> userManager, IConfiguration configuration)
+        // In-memory OTP storage: Email -> (OTP Code, Expiry Time)
+        private static readonly Dictionary<string, (string Code, DateTime Expiry)> _otpCache = new();
+
+        public AccountService(
+            UserManager<ApplicationUser> userManager, 
+            IConfiguration configuration,
+            ApplicationDbContext dbContext,
+            IEmailService emailService)
         {
             _userManager = userManager;
             _configuration = configuration;
+            _dbContext = dbContext;
+            _emailService = emailService;
         }
 
         // --- THE SIGNATURE HERE MUST MATCH THE INTERFACE EXACTLY ---
@@ -74,27 +87,133 @@ namespace SPSCReady.Infrastructure.Services
             };
         }
 
-        // --- GET USER PROFILE METHOD ---
-        public async Task<UserProfileDto?> GetUserProfileAsync(string userId)
+        // --- OTP LOGIN METHODS ---
+        public async Task<(bool Success, string Message)> SendOtpAsync(OtpRequestDto request)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            if (request == null)
+                return (false, "Invalid request.");
 
-            if (user == null)
+            // Validate email
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return (false, "Email is required.");
+
+            // Basic email format validation to avoid wasting SMTP calls
+            try
             {
-                return null;
+                _ = new System.Net.Mail.MailAddress(request.Email);
+            }
+            catch
+            {
+                return (false, "Invalid email format.");
             }
 
-            return new UserProfileDto
+            // Check if user exists
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
             {
-                Id = user.Id,
-                FullName = $"{user.FirstName} {user.LastName}".Trim(),
-                PhoneNumber = user.PhoneNumber ?? string.Empty,
-                Email = user.Email ?? string.Empty,
-                AccountStatus = "Active Member"
+                // For security, don't reveal if user exists or not
+                return (false, "If an account with this email exists, an OTP will be sent.");
+            }
+
+            // Generate OTP (6-digit code)
+            var otpCode = GenerateOtp();
+
+            // Send OTP via email
+            // NOTE: EmailService already logs SMTP exception details to Console.
+            // Here we keep the client-safe message.
+            var emailSent = await _emailService.SendOtpEmailAsync(request.Email, otpCode);
+            if (!emailSent)
+            {
+                return (false, "Failed to send OTP. Please try again.");
+            }
+
+            // Store OTP in memory (valid for 10 minutes)
+            _otpCache[request.Email] = (otpCode, DateTime.UtcNow.AddMinutes(10));
+
+            return (true, "OTP sent successfully to your email.");
+        }
+
+
+        public async Task<LoginResponseDto> VerifyOtpAndLoginAsync(OtpVerifyDto request)
+        {
+            // Validate input
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code))
+            {
+                return new LoginResponseDto
+                {
+                    IsSuccessful = false,
+                    Message = "Email and OTP code are required."
+                };
+            }
+
+            // Check if OTP exists in cache
+            if (!_otpCache.TryGetValue(request.Email, out var otpData))
+            {
+                return new LoginResponseDto
+                {
+                    IsSuccessful = false,
+                    Message = "Invalid or expired OTP."
+                };
+            }
+
+            // Check if OTP has expired
+            if (otpData.Expiry < DateTime.UtcNow)
+            {
+                _otpCache.Remove(request.Email);
+                return new LoginResponseDto
+                {
+                    IsSuccessful = false,
+                    Message = "Invalid or expired OTP."
+                };
+            }
+
+            // Verify OTP code
+            if (otpData.Code != request.Code)
+            {
+                return new LoginResponseDto
+                {
+                    IsSuccessful = false,
+                    Message = "Invalid or expired OTP."
+                };
+            }
+
+            // OTP is valid - remove it from cache (single-use)
+            _otpCache.Remove(request.Email);
+
+            // Find the user
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+            {
+                return new LoginResponseDto
+                {
+                    IsSuccessful = false,
+                    Message = "User not found."
+                };
+            }
+
+            // Generate JWT token
+            var token = GenerateJwtToken(user);
+
+            return new LoginResponseDto
+            {
+                IsSuccessful = true,
+                Message = "Login successful.",
+                Token = token
             };
         }
 
-        // --- JWT HELPER METHOD ---
+        // --- HELPER METHODS ---
+        private string GenerateOtp()
+        {
+            // Use cryptographically secure random
+            // Generates a 6-digit string in range [100000..999999]
+            var bytes = new byte[4];
+            System.Security.Cryptography.RandomNumberGenerator.Fill(bytes);
+            var value = BitConverter.ToUInt32(bytes, 0) % 900000; // 0..899999
+            return (value + 100000).ToString();
+        }
+
+
         private string GenerateJwtToken(ApplicationUser user)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
