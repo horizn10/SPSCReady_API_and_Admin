@@ -1,8 +1,8 @@
-using Admin.web.Models;
+using Admin.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace Admin.web.Controllers
+namespace Admin.Web.Controllers
 {
     public class HomeController : Controller
     {
