@@ -163,7 +163,7 @@ public class AttemptService : IAttemptService
             a.StartedAt,
             a.SubmittedAt,
             a.TotalScore,
-            a.MockTest.TotalMarks,
+            (int)a.MockTest.TotalMarks,
             a.Percentage,
             a.Status.ToString()
         )).ToList();
@@ -219,7 +219,7 @@ public class AttemptService : IAttemptService
             attempt.AttemptId,
             mockTest.Title,
             attempt.TotalScore ?? 0,
-            mockTest.TotalMarks,
+            (int)mockTest.TotalMarks,
             attempt.Percentage ?? 0,
             attempt.CorrectCount ?? 0,
             attempt.WrongCount ?? 0,
