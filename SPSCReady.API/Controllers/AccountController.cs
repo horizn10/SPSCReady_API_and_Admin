@@ -95,5 +95,29 @@ namespace SPSCReady.API.Controllers
 
             return Unauthorized(new { message = response.Message });
         }
+
+        /// <summary>
+        /// Get current user's profile information
+        /// </summary>
+        [Authorize]
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Unauthorized(new { message = "User ID not found in token." });
+            }
+
+            var profile = await _accountService.GetUserProfileAsync(userId);
+
+            if (profile == null)
+            {
+                return NotFound(new { message = "User profile not found." });
+            }
+
+            return Ok(profile);
+        }
     }
 }
