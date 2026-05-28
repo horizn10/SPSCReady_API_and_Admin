@@ -14,5 +14,8 @@ namespace SPSCReady.Application.Interfaces
         Task<(bool Success, string Message)> SendOtpAsync(OtpRequestDto request);
 
         Task<LoginResponseDto> VerifyOtpAndLoginAsync(OtpVerifyDto request);
+
+        // User Profile
+        Task<UserProfileDto?> GetUserProfileAsync(string userId);
     }
 }

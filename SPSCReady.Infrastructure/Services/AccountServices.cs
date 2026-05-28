@@ -222,6 +222,7 @@ namespace SPSCReady.Infrastructure.Services
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email!),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim("FirstName", user.FirstName)
@@ -240,6 +241,25 @@ namespace SPSCReady.Infrastructure.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
             return tokenHandler.WriteToken(token);
+        }
+
+        public async Task<UserProfileDto?> GetUserProfileAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                return null;
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return null;
+
+            return new UserProfileDto
+            {
+                Id = user.Id,
+                FullName = $"{user.FirstName} {user.LastName}".Trim(),
+                Email = user.Email ?? string.Empty,
+                PhoneNumber = user.PhoneNumber ?? string.Empty,
+                AccountStatus = "Active Member"
+            };
         }
     }
 }
