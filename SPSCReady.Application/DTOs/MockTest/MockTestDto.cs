@@ -6,7 +6,7 @@ public record MockTestDto(
     string PaperType,
     int PaperNumber,
     int DurationMinutes,
-    int TotalMarks,
-    int TotalQuestions,
+    decimal TotalMarks,
+    decimal TotalQuestions,
     decimal? PassingMarks
 );
