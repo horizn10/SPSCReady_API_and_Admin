@@ -342,9 +342,9 @@ namespace SPSCReady.Infrastructure.Migrations
                     PaperType = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     PaperNumber = table.Column<int>(type: "int", nullable: false),
                     DurationMinutes = table.Column<int>(type: "int", nullable: false),
-                    TotalMarks = table.Column<int>(type: "int", nullable: false),
-                    TotalQuestions = table.Column<int>(type: "int", nullable: false),
-                    PassingMarks = table.Column<decimal>(type: "decimal(6,2)", nullable: true),
+                    TotalMarks = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalQuestions = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PassingMarks = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
                 },

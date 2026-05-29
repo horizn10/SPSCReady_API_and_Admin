@@ -12,8 +12,8 @@ using SPSCReady.Infrastructure.Data;
 namespace SPSCReady.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260525065147_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260529051020_UpdateMockTestMarksToDecimal")]
+    partial class UpdateMockTestMarksToDecimal
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -489,7 +489,7 @@ namespace SPSCReady.Infrastructure.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<decimal?>("PassingMarks")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(6,2)");
 
                     b.Property<string>("Title")
                         .IsRequired()
