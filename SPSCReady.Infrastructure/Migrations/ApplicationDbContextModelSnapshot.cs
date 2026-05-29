@@ -486,18 +486,18 @@ namespace SPSCReady.Infrastructure.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<decimal?>("PassingMarks")
-                        .HasColumnType("decimal(6,2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int>("TotalMarks")
-                        .HasColumnType("int");
+                    b.Property<decimal>("TotalMarks")
+                        .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("TotalQuestions")
-                        .HasColumnType("int");
+                    b.Property<decimal>("TotalQuestions")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("MockTestId");
 

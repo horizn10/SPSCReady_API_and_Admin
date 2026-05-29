@@ -27,13 +27,15 @@ public class MockTestConfiguration : IEntityTypeConfiguration<MockTest>
                .IsRequired();
 
         builder.Property(x => x.TotalMarks)
-               .IsRequired();
+               .IsRequired()
+               .HasColumnType("decimal(18,2)");
 
         builder.Property(x => x.TotalQuestions)
-               .IsRequired();
+               .IsRequired()
+               .HasColumnType("decimal(18,2)");
 
         builder.Property(x => x.PassingMarks)
-               .HasColumnType("decimal(6,2)");
+               .HasColumnType("decimal(18,2)");
 
         builder.Property(x => x.IsActive)
                .IsRequired()
