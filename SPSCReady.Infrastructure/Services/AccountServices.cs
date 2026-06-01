@@ -203,6 +203,13 @@ namespace SPSCReady.Infrastructure.Services
         }
 
         // --- HELPER METHODS ---
+        private string GenerateOtp()
+        {
+            // Generate a random 6-digit code
+            var random = new System.Random();
+            return random.Next(100000, 999999).ToString();
+        }
+
         private string GenerateJwtToken(ApplicationUser user)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
