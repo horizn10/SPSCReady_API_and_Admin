@@ -10,8 +10,8 @@ public class MockTest
     public PaperType PaperType { get; set; }
     public int PaperNumber { get; set; }
     public int DurationMinutes { get; set; }
-    public decimal TotalMarks { get; set; }
-    public decimal TotalQuestions { get; set; }
+    public int TotalMarks { get; set; }
+    public int TotalQuestions { get; set; }
     public decimal? PassingMarks { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

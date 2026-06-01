@@ -5,7 +5,7 @@ public record MockTestDetailDto(
     string Title,
     string PaperType,
     int DurationMinutes,
-    decimal TotalMarks,
-    decimal TotalQuestions,
+    int TotalMarks,
+    int TotalQuestions,
     List<SectionWithQuestionsDto> Sections
 );

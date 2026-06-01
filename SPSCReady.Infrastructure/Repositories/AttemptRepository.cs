@@ -38,7 +38,7 @@ public class AttemptRepository : IAttemptRepository
             .FirstOrDefaultAsync(a => a.AttemptId == attemptId);
     }
 
-    public async Task<List<UserAttempt>> GetByUserIdAsync(int userId)
+    public async Task<List<UserAttempt>> GetByUserIdAsync(string userId)
     {
         return await _context.UserAttempts
             .Where(a => a.UserId == userId)
@@ -47,7 +47,7 @@ public class AttemptRepository : IAttemptRepository
             .ToListAsync();
     }
 
-    public async Task<UserAttempt?> GetExistingAttemptAsync(int userId, int mockTestId)
+    public async Task<UserAttempt?> GetExistingAttemptAsync(string userId, int mockTestId)
     {
         return await _context.UserAttempts
             .FirstOrDefaultAsync(a => a.UserId == userId && a.MockTestId == mockTestId);

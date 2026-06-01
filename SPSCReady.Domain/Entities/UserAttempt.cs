@@ -5,7 +5,7 @@ namespace SPSCReady.Domain.Entities;
 public class UserAttempt
 {
     public int AttemptId { get; set; }
-    public int UserId { get; set; }
+    public string UserId { get; set; } = default!;
     public int MockTestId { get; set; }
     public DateTime StartedAt { get; set; } = DateTime.UtcNow;
     public DateTime? SubmittedAt { get; set; }
