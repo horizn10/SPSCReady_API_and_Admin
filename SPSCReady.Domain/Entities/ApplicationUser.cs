@@ -11,5 +11,6 @@ namespace SPSCReady.Domain.Entities
         public string LastName { get; set; } = string.Empty;
         public string Gender { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public int UserId { get; set; }
     }
 }
