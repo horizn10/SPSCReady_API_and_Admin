@@ -1,0 +1,465 @@
+﻿@model MyApp.Admin.Models.ExamPaperCreateModel
+@using MyApp.Admin.Models
+
+@{
+    ViewData["Title"] = "Upload Question Paper";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var departments = ViewBag.Departments as List<DepartmentDto> ?? new List<DepartmentDto>();
+    var stages = ViewBag.Stages as List<ExamStageDto> ?? new List<ExamStageDto>();
+    var stageOptionsHtml = string.Join("",
+        stages.Select(s => "<option value=\"" + s.Id + "\">" + s.Name + "</option>"));
+}
+
+<style>
+    :root {
+        --c-brand      : #2A3F84;
+        --c-brand-lt   : #e8edf8;
+        --c-success    : #10B981;
+        --c-success-lt : #ECFDF5;
+        --c-danger     : #EF4444;
+        --c-border     : #E5E7EB;
+        --c-text       : #1F2937;
+        --c-muted      : #6B7280;
+        --c-surface    : #ffffff;
+        --radius       : 8px;
+        --shadow-card  : 0 1px 4px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.04);
+        --font-main    : 'DM Sans', 'Segoe UI', sans-serif;
+        --font-mono    : 'JetBrains Mono', monospace;
+    }
+
+    .up-page  { font-family: var(--font-main); color: var(--c-text); }
+
+    .up-card  {
+        background: var(--c-surface);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-card);
+        border: 1px solid var(--c-border);
+        overflow: hidden;
+    }
+
+    .up-card__header {
+        background: var(--c-brand);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+    }
+    .up-card__header h2 {
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    .up-card__header svg { color: rgba(255,255,255,.7); flex-shrink: 0; }
+
+    /* alerts */
+    .up-alert {
+        margin: 1rem 1.5rem 0;
+        padding: .75rem 1rem;
+        border-radius: var(--radius);
+        font-size: .85rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+    .up-alert--success { background: var(--c-success-lt); color: #065F46; border: 1px solid #6EE7B7; }
+
+    .up-validation-summary {
+        margin: 1rem 1.5rem 0;
+        padding: .75rem 1rem;
+        border-radius: 6px;
+        background: #FEF2F2;
+        border: 1px solid #FECACA;
+        color: #991B1B;
+        font-size: .82rem;
+    }
+    .up-validation-summary ul { margin: .25rem 0 0 1rem; padding: 0; }
+    .up-validation-summary li { margin-bottom: .15rem; }
+
+    /* form grid */
+    .up-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.25rem;
+        padding: 1.5rem;
+    }
+
+    .up-field { display: flex; flex-direction: column; gap: .4rem; }
+
+    .up-label {
+        font-size: .7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: var(--c-muted);
+    }
+    .up-label .req { color: var(--c-danger); margin-left: 2px; }
+
+    .up-input,
+    .up-select {
+        width: 100%;
+        border: 1.5px solid var(--c-border);
+        border-radius: 6px;
+        padding: .5rem .75rem;
+        font-size: .875rem;
+        font-family: inherit;
+        color: var(--c-text);
+        background: #fff;
+        outline: none;
+        transition: border-color .15s, box-shadow .15s;
+        -webkit-appearance: none;
+        appearance: none;
+        box-sizing: border-box;
+    }
+    .up-select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right .6rem center;
+        padding-right: 2rem;
+        cursor: pointer;
+    }
+    .up-input:focus, .up-select:focus {
+        border-color: var(--c-brand);
+        box-shadow: 0 0 0 3px rgba(42,63,132,.1);
+    }
+    .up-input:disabled, .up-select:disabled {
+        background: #F9FAFB;
+        color: #9CA3AF;
+        cursor: not-allowed;
+    }
+    .up-error { font-size: .72rem; color: var(--c-danger); }
+
+    .up-divider {
+        border: none;
+        border-top: 1.5px dashed var(--c-border);
+        margin: 0 1.5rem;
+    }
+
+    /* papers table */
+    .up-papers-section { padding: 1.5rem; }
+    .up-papers-section h3 {
+        font-size: .78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: var(--c-muted);
+        margin: 0 0 1rem;
+    }
+
+    .up-table-wrap { overflow-x: auto; }
+    .up-table {
+        width: 100%;
+        min-width: 720px;
+        border-collapse: separate;
+        border-spacing: 0 .5rem;
+    }
+    .up-table thead th {
+        font-size: .68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: var(--c-muted);
+        padding: .5rem .75rem;
+        text-align: left;
+        background: #F9FAFB;
+        border-top: 1px solid var(--c-border);
+        border-bottom: 1px solid var(--c-border);
+    }
+    .up-table thead th:first-child { border-left: 1px solid var(--c-border); border-radius: 6px 0 0 6px; }
+    .up-table thead th:last-child  { border-right: 1px solid var(--c-border); border-radius: 0 6px 6px 0; }
+
+    .up-row { background: #fff; transition: background .15s; }
+    .up-row:hover { background: #FAFBFF; }
+    .up-row td {
+        padding: .5rem .75rem;
+        vertical-align: middle;
+        border-top: 1px solid var(--c-border);
+        border-bottom: 1px solid var(--c-border);
+    }
+    .up-row td:first-child { border-left: 1px solid var(--c-border); border-radius: 6px 0 0 6px; }
+    .up-row td:last-child  { border-right: 1px solid var(--c-border); border-radius: 0 6px 6px 0; }
+
+    .up-serial {
+        width: 2.2rem;
+        height: 2.2rem;
+        border-radius: 6px;
+        background: var(--c-brand-lt);
+        color: var(--c-brand);
+        font-size: .78rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-mono);
+    }
+
+    .up-upload-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        border: 1.5px dashed #93C5FD;
+        background: #EFF6FF;
+        color: #2563EB;
+        padding: .45rem .85rem;
+        border-radius: 6px;
+        font-size: .8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .18s;
+        white-space: nowrap;
+        font-family: inherit;
+    }
+    .up-upload-btn:hover { background: #DBEAFE; border-color: #3B82F6; }
+    .up-upload-btn.ok    { background: var(--c-success-lt); border-color: #34D399; color: #059669; }
+
+    /* footer */
+    .up-footer {
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: flex-end;
+        gap: .75rem;
+        border-top: 1px solid var(--c-border);
+        background: #FAFAFA;
+    }
+    .up-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        font-size: .875rem;
+        font-weight: 600;
+        padding: .55rem 1.4rem;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: background .18s, transform .12s;
+        font-family: inherit;
+    }
+    .up-btn:active        { transform: scale(.97); }
+    .up-btn--cancel       { background: #F3F4F6; color: #374151; }
+    .up-btn--cancel:hover { background: #E5E7EB; }
+    .up-btn--save         { background: var(--c-success); color: #fff; }
+    .up-btn--save:hover   { background: #059669; }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+
+<div class="up-page">
+    <div class="up-card">
+
+        <div class="up-card__header">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0121 9.414V19a2 2 0 01-2 2z" />
+            </svg>
+            <h2>Upload Question Paper</h2>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="up-alert up-alert--success">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                @TempData["Success"]
+            </div>
+        }
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="up-validation-summary">
+                <strong>Please fix the following errors:</strong>
+                @Html.ValidationSummary(true)
+            </div>
+        }
+
+        @using (Html.BeginForm("Create", "Upload", FormMethod.Post, new { enctype = "multipart/form-data", id = "upForm" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="up-grid">
+
+                @* Department *@
+                <div class="up-field">
+                    <label class="up-label">Department <span class="req">*</span></label>
+                    @Html.DropDownListFor(m => m.DepartmentId,
+                        new SelectList(departments, "Id", "Name", Model.DepartmentId),
+                        "Select department",
+                        new { @class = "up-select", id = "deptSelect", onchange = "upLoadPosts(this.value)", required = "required" })
+                    @Html.ValidationMessageFor(m => m.DepartmentId, "", new { @class = "up-error" })
+                </div>
+
+                @* Post *@
+                <div class="up-field">
+                    <label class="up-label">Exam Post <span class="req">*</span></label>
+                    @Html.DropDownListFor(m => m.PostId,
+                        new SelectList(Enumerable.Empty<PostDto>(), "Id", "Name"),
+                        "Select post",
+                        new { @class = "up-select", id = "postSelect", disabled = "disabled", required = "required" })
+                    @Html.ValidationMessageFor(m => m.PostId, "", new { @class = "up-error" })
+                </div>
+
+                @* Year *@
+                <div class="up-field">
+                    <label class="up-label">Exam Year <span class="req">*</span></label>
+                    @Html.TextBoxFor(m => m.ExamYear,
+                        new { @class = "up-input", type = "number", min = "2000", max = "2100", placeholder = "e.g. 2024", required = "required" })
+                    @Html.ValidationMessageFor(m => m.ExamYear, "", new { @class = "up-error" })
+                </div>
+
+                @* Title *@
+                <div class="up-field">
+                    <label class="up-label">Paper Title <span class="req">*</span></label>
+                    @Html.TextBoxFor(m => m.Title,
+                        new { @class = "up-input", placeholder = "e.g. Prelims 2024", required = "required" })
+                    @Html.ValidationMessageFor(m => m.Title, "", new { @class = "up-error" })
+                </div>
+
+                @* Number of papers *@
+                <div class="up-field">
+                    <label class="up-label">Number of Papers <span class="req">*</span></label>
+                    @Html.DropDownListFor(m => m.NumSubjects,
+                        new SelectList(
+                            Enumerable.Range(1, 10).Select(n => new { Value = n, Text = n + (n > 1 ? " Papers" : " Paper") }),
+                            "Value", "Text", Model.NumSubjects),
+                        "Select count",
+                        new { @class = "up-select", id = "numPapersSelect", onchange = "upGenerateRows()", required = "required" })
+                    @Html.ValidationMessageFor(m => m.NumSubjects, "", new { @class = "up-error" })
+                </div>
+
+            </div>
+
+            <hr class="up-divider" />
+
+            <div class="up-papers-section" id="upPapersSection" style="display:none;">
+                <h3 id="upSectionTitle"></h3>
+                <div class="up-table-wrap">
+                    <table class="up-table">
+                        <thead>
+                            <tr>
+                                <th style="width:54px">#</th>
+                                <th>Paper / Subject Name</th>
+                                <th style="width:170px">Phase (Stage)</th>
+                                <th style="width:170px; text-align:center">Upload PDF</th>
+                            </tr>
+                        </thead>
+                        <tbody id="upRowsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="up-footer">
+                <button type="button" class="up-btn up-btn--cancel" onclick="history.back()">Cancel</button>
+                <button type="submit" class="up-btn up-btn--save">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Save Papers
+                </button>
+            </div>
+        }
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            'use strict';
+
+            var STAGE_OPTIONS = '@Html.Raw(stageOptionsHtml)';
+
+            // ── Load posts for selected department ───────────────────────
+            function upLoadPosts(deptId) {
+                var sel = document.getElementById('postSelect');
+                sel.innerHTML = '<option value="">Select post</option>';
+                sel.disabled = true;
+                if (!deptId) return;
+
+                fetch('/api/papers/posts?departmentId=' + encodeURIComponent(deptId))
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        data.forEach(function (p) {
+                            var opt = document.createElement('option');
+                            opt.value = p.id;
+                            opt.textContent = p.name;
+                            sel.appendChild(opt);
+                        });
+                        sel.disabled = false;
+                    })
+                    .catch(function (e) { console.error('Posts load failed:', e); });
+            }
+
+            // ── Generate table rows ──────────────────────────────────────
+            function upGenerateRows() {
+                var num     = parseInt(document.getElementById('numPapersSelect').value, 10);
+                var section = document.getElementById('upPapersSection');
+                var title   = document.getElementById('upSectionTitle');
+                var tbody   = document.getElementById('upRowsBody');
+
+                if (!num) { section.style.display = 'none'; return; }
+
+                title.textContent = num + ' Paper' + (num > 1 ? 's' : '') + ' — Configuration';
+                section.style.display = 'block';
+                tbody.innerHTML = '';
+
+                for (var i = 0; i < num; i++) {
+                    var sl = ('0' + (i + 1)).slice(-2);
+                    var tr = document.createElement('tr');
+                    tr.className = 'up-row';
+                    tr.innerHTML =
+                        '<td><div class="up-serial">' + sl + '</div></td>' +
+                        '<td>' +
+                            '<input type="text" name="SubjectPapers[' + i + '].SubjectName"' +
+                            ' class="up-input" placeholder="e.g. General Studies Paper I" required />' +
+                        '</td>' +
+                        '<td>' +
+                            '<select name="SubjectPapers[' + i + '].StageId" class="up-select" required>' +
+                                '<option value="">Select phase</option>' + STAGE_OPTIONS +
+                            '</select>' +
+                        '</td>' +
+                        '<td style="text-align:center">' +
+                            '<label class="up-upload-btn" id="up-label-' + i + '">' +
+                                '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none"' +
+                                ' viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">' +
+                                    '<path stroke-linecap="round" stroke-linejoin="round"' +
+                                    ' d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>' +
+                                '</svg>' +
+                                '<span id="up-span-' + i + '">Upload PDF</span>' +
+                                '<input type="file" name="SubjectPapers[' + i + '].PdfFile"' +
+                                ' accept=".pdf" style="display:none"' +
+                                ' onchange="upHandleFile(event,' + i + ')" required />' +
+                            '</label>' +
+                        '</td>';
+                    tbody.appendChild(tr);
+                }
+            }
+
+            // ── Update label after file chosen ───────────────────────────
+            function upHandleFile(event, idx) {
+                var file  = event.target.files[0];
+                var label = document.getElementById('up-label-' + idx);
+                var span  = document.getElementById('up-span-' + idx);
+                if (!file) return;
+                span.textContent = file.name.length > 22
+                    ? file.name.substring(0, 22) + '...'
+                    : file.name;
+                label.classList.add('ok');
+            }
+
+            // ── Expose to inline handlers ────────────────────────────────
+            window.upLoadPosts    = upLoadPosts;
+            window.upGenerateRows = upGenerateRows;
+            window.upHandleFile   = upHandleFile;
+
+            // ── Restore state on validation failure ──────────────────────
+            document.addEventListener('DOMContentLoaded', function () {
+                var numEl  = document.getElementById('numPapersSelect');
+                var deptEl = document.getElementById('deptSelect');
+                if (numEl && numEl.value)   upGenerateRows();
+                if (deptEl && deptEl.value) upLoadPosts(deptEl.value);
+            });
+        }());
+    </script>
+}
