@@ -203,17 +203,6 @@ namespace SPSCReady.Infrastructure.Services
         }
 
         // --- HELPER METHODS ---
-        private string GenerateOtp()
-        {
-            // Use cryptographically secure random
-            // Generates a 6-digit string in range [100000..999999]
-            var bytes = new byte[4];
-            System.Security.Cryptography.RandomNumberGenerator.Fill(bytes);
-            var value = BitConverter.ToUInt32(bytes, 0) % 900000; // 0..899999
-            return (value + 100000).ToString();
-        }
-
-
         private string GenerateJwtToken(ApplicationUser user)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
@@ -222,7 +211,7 @@ namespace SPSCReady.Infrastructure.Services
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.NameIdentifier, user.Id), // Use string Id
                 new Claim(JwtRegisteredClaimNames.Email, user.Email!),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim("FirstName", user.FirstName)
@@ -248,18 +237,26 @@ namespace SPSCReady.Infrastructure.Services
             if (string.IsNullOrWhiteSpace(userId))
                 return null;
 
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-                return null;
-
-            return new UserProfileDto
+            // userId is now the numeric ID from the claim
+            if (int.TryParse(userId, out int numericUserId))
             {
-                Id = user.Id,
-                FullName = $"{user.FirstName} {user.LastName}".Trim(),
-                Email = user.Email ?? string.Empty,
-                PhoneNumber = user.PhoneNumber ?? string.Empty,
-                AccountStatus = "Active Member"
-            };
+                var user = await _dbContext.Users
+                    .FirstOrDefaultAsync(u => u.UserId == numericUserId);
+                
+                if (user == null)
+                    return null;
+
+                return new UserProfileDto
+                {
+                    Id = user.Id,
+                    FullName = $"{user.FirstName} {user.LastName}".Trim(),
+                    Email = user.Email ?? string.Empty,
+                    PhoneNumber = user.PhoneNumber ?? string.Empty,
+                    AccountStatus = "Active Member"
+                };
+            }
+
+            return null;
         }
     }
 }

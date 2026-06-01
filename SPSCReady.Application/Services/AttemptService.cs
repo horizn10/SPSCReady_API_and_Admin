@@ -21,7 +21,7 @@ public class AttemptService : IAttemptService
         _questionRepository = questionRepository;
     }
 
-    public async Task<StartAttemptResponseDto> StartAttemptAsync(int userId, int mockTestId)
+    public async Task<StartAttemptResponseDto> StartAttemptAsync(string userId, int mockTestId)
     {
         // Get the mock test
         var mockTest = await _mockTestRepository.GetByIdAsync(mockTestId)
@@ -51,7 +51,7 @@ public class AttemptService : IAttemptService
         );
     }
 
-    public async Task<AttemptResultDto> SubmitAttemptAsync(SubmitAttemptRequestDto dto, int userId)
+    public async Task<AttemptResultDto> SubmitAttemptAsync(SubmitAttemptRequestDto dto, string userId)
     {
         // Get the attempt with all data
         var attempt = await _attemptRepository.GetWithAnswersAsync(dto.AttemptId)
@@ -144,7 +144,7 @@ public class AttemptService : IAttemptService
         return BuildAttemptResultDto(resultAttempt);
     }
 
-    public async Task<AttemptResultDto?> GetAttemptResultAsync(int attemptId, int userId)
+    public async Task<AttemptResultDto?> GetAttemptResultAsync(int attemptId, string userId)
     {
         var attempt = await _attemptRepository.GetWithAnswersAsync(attemptId);
         if (attempt == null || attempt.UserId != userId || attempt.Status != AttemptStatus.Submitted)
@@ -153,7 +153,7 @@ public class AttemptService : IAttemptService
         return BuildAttemptResultDto(attempt);
     }
 
-    public async Task<List<AttemptSummaryDto>> GetUserAttemptsAsync(int userId)
+    public async Task<List<AttemptSummaryDto>> GetUserAttemptsAsync(string userId)
     {
         var attempts = await _attemptRepository.GetByUserIdAsync(userId);
         return attempts.Select(a => new AttemptSummaryDto(

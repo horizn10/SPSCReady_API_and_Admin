@@ -93,12 +93,16 @@ public class AttemptsController : ControllerBase
         return Ok(new { message = "Attempt marked as expired" });
     }
 
-    private int GetUserId()
+    private string GetUserId()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (int.TryParse(userIdClaim, out int userId))
-            return userId;
+        // Check standard XML claim, then shorter 'sub' or 'nameid' claims
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                         ?? User.FindFirst("sub")?.Value
+                         ?? User.FindFirst("nameid")?.Value;
 
-        throw new UnauthorizedAccessException("User ID not found in claims");
+        if (userIdClaim != null)
+            return userIdClaim;
+
+        throw new UnauthorizedAccessException($"User ID not found in claims. Available claims: {string.Join(", ", User.Claims.Select(c => c.Type + "=" + c.Value))}");
     }
 }
