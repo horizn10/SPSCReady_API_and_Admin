@@ -20,3 +20,9 @@ html {
 body {
   margin-bottom: 60px;
 }
+@media (max-width: 768px) {
+    .dp-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
