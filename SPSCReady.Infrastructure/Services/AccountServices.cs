@@ -218,7 +218,7 @@ namespace SPSCReady.Infrastructure.Services
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                new Claim(ClaimTypes.NameIdentifier, user.Id), // Use string Id
+                new Claim(ClaimTypes.NameIdentifier, user.Id), // Use the GUID Id from AspNetUsers table
                 new Claim(JwtRegisteredClaimNames.Email, user.Email!),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim("FirstName", user.FirstName)
@@ -244,26 +244,21 @@ namespace SPSCReady.Infrastructure.Services
             if (string.IsNullOrWhiteSpace(userId))
                 return null;
 
-            // userId is now the numeric ID from the claim
-            if (int.TryParse(userId, out int numericUserId))
+            // userId is the GUID Id from the JWT token claim
+            var user = await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.Id == userId);
+            
+            if (user == null)
+                return null;
+
+            return new UserProfileDto
             {
-                var user = await _dbContext.Users
-                    .FirstOrDefaultAsync(u => u.UserId == numericUserId);
-                
-                if (user == null)
-                    return null;
-
-                return new UserProfileDto
-                {
-                    Id = user.Id,
-                    FullName = $"{user.FirstName} {user.LastName}".Trim(),
-                    Email = user.Email ?? string.Empty,
-                    PhoneNumber = user.PhoneNumber ?? string.Empty,
-                    AccountStatus = "Active Member"
-                };
-            }
-
-            return null;
+                Id = user.Id,
+                FullName = $"{user.FirstName} {user.LastName}".Trim(),
+                Email = user.Email ?? string.Empty,
+                PhoneNumber = user.PhoneNumber ?? string.Empty,
+                AccountStatus = "Active Member"
+            };
         }
     }
 }

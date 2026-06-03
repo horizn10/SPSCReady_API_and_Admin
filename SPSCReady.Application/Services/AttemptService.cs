@@ -32,14 +32,19 @@ public class AttemptService : IAttemptService
         if (existingAttempt != null && existingAttempt.Status == AttemptStatus.InProgress)
             throw new InvalidOperationException("User already has an in-progress attempt for this test");
 
-        // Create new attempt
+        // Create new attempt with default values for all score-related fields
         var attempt = new UserAttempt
         {
             UserId = userId,
             MockTestId = mockTestId,
             StartedAt = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.AddMinutes(mockTest.DurationMinutes),
-            Status = AttemptStatus.InProgress
+            Status = AttemptStatus.InProgress,
+            CorrectCount = 0,
+            WrongCount = 0,
+            SkippedCount = 0,
+            TotalScore = 0,
+            Percentage = 0
         };
 
         var created = await _attemptRepository.CreateAsync(attempt);
@@ -63,6 +68,10 @@ public class AttemptService : IAttemptService
         // Check if already submitted
         if (attempt.Status == AttemptStatus.Submitted)
             throw new InvalidOperationException("Attempt already submitted");
+
+        // Check if attempt has expired
+        if (DateTime.UtcNow > attempt.ExpiresAt)
+            throw new InvalidOperationException("Attempt time has expired. You cannot submit after the deadline.");
 
         // Create UserAnswer records and calculate scores
         var userAnswers = new List<UserAnswer>();
@@ -113,7 +122,7 @@ public class AttemptService : IAttemptService
                 SelectedOption = answerDto.SelectedOption,
                 IsCorrect = isCorrect,
                 MarksAwarded = marksAwarded,
-                IsMarkedForReview = answerDto.IsMarkedForReview,
+                IsMarkedForReview = answerDto.IsMarkedForReview ?? false,
                 AnsweredAt = DateTime.UtcNow
             };
 
@@ -167,6 +176,26 @@ public class AttemptService : IAttemptService
             a.Percentage,
             a.Status.ToString()
         )).ToList();
+    }
+
+    public async Task<bool> ExpireAttemptAsync(int attemptId, string userId)
+    {
+        var attempt = await _attemptRepository.GetByIdAsync(attemptId)
+            ?? throw new InvalidOperationException("Attempt not found");
+
+        if (attempt.UserId != userId)
+            throw new UnauthorizedAccessException("User can only expire their own attempts");
+
+        // Only expire if still in progress
+        if (attempt.Status == AttemptStatus.InProgress)
+        {
+            attempt.Status = AttemptStatus.Expired;
+            attempt.SubmittedAt = DateTime.UtcNow;
+            await _attemptRepository.UpdateAsync(attempt);
+            return true;
+        }
+
+        return false; // Already expired, submitted, or abandoned
     }
 
     private AttemptResultDto BuildAttemptResultDto(UserAttempt attempt)

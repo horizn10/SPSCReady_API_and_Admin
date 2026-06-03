@@ -89,8 +89,23 @@ public class AttemptsController : ControllerBase
     [HttpPut("{attemptId}/expire")]
     public async Task<ActionResult> ExpireAttempt(int attemptId)
     {
-        // Placeholder - would update attempt status to Expired
-        return Ok(new { message = "Attempt marked as expired" });
+        var userId = GetUserId();
+        try
+        {
+            var result = await _attemptService.ExpireAttemptAsync(attemptId, userId);
+            if (result)
+                return Ok(new { message = "Attempt marked as expired successfully", attemptId });
+            else
+                return BadRequest(new { message = "Attempt cannot be expired (already submitted or expired)" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
     }
 
     private string GetUserId()

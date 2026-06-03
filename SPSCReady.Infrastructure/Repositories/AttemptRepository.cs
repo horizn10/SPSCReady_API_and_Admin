@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SPSCReady.Application.Interfaces;
 using SPSCReady.Domain.Entities;
+using SPSCReady.Domain.Enums;
 using SPSCReady.Infrastructure.Data;
 
 namespace SPSCReady.Infrastructure.Repositories;
@@ -50,7 +51,7 @@ public class AttemptRepository : IAttemptRepository
     public async Task<UserAttempt?> GetExistingAttemptAsync(string userId, int mockTestId)
     {
         return await _context.UserAttempts
-            .FirstOrDefaultAsync(a => a.UserId == userId && a.MockTestId == mockTestId);
+            .FirstOrDefaultAsync(a => a.UserId == userId && a.MockTestId == mockTestId && a.Status == AttemptStatus.InProgress);
     }
 
     public async Task AddAnswersAsync(List<UserAnswer> answers)
