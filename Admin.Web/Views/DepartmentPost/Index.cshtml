@@ -1,0 +1,411 @@
+﻿@model SPSCReady.Admin.Models.DepartmentPostPageModel
+@using SPSCReady.Admin.Models
+
+@{
+    ViewData["Title"] = "Manage Departments & Posts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var departments = Model.Departments;
+    var posts = Model.Posts;
+}
+
+<style>
+    :root {
+        --c-brand      : #2A3F84;
+        --c-brand-lt   : #e8edf8;
+        --c-success    : #10B981;
+        --c-success-lt : #ECFDF5;
+        --c-danger     : #EF4444;
+        --c-danger-lt  : #FEF2F2;
+        --c-border     : #E5E7EB;
+        --c-text       : #1F2937;
+        --c-muted      : #6B7280;
+        --c-surface    : #ffffff;
+        --radius       : 8px;
+        --shadow-card  : 0 1px 4px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.04);
+        --font-main    : 'DM Sans', 'Segoe UI', sans-serif;
+    }
+
+    .dp-page { font-family: var(--font-main); color: var(--c-text); }
+
+    .dp-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .dp-card {
+        background: var(--c-surface);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-card);
+        border: 1px solid var(--c-border);
+        overflow: hidden;
+    }
+
+    .dp-card__header {
+        background: var(--c-brand);
+        padding: .85rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+    }
+    .dp-card__header h2 {
+        color: #fff;
+        font-size: .95rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    .dp-card__header svg { color: rgba(255,255,255,.75); flex-shrink: 0; }
+
+    .dp-card__body { padding: 1.25rem; }
+
+    .dp-alert {
+        padding: .7rem 1rem;
+        border-radius: 6px;
+        font-size: .82rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        margin-bottom: 1rem;
+    }
+    .dp-alert--success { background: var(--c-success-lt); color: #065F46; border: 1px solid #6EE7B7; }
+
+    .dp-field { display: flex; flex-direction: column; gap: .35rem; margin-bottom: 1rem; }
+
+    .dp-label {
+        font-size: .7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: var(--c-muted);
+    }
+    .dp-label .req { color: var(--c-danger); margin-left: 2px; }
+
+    .dp-input, .dp-select {
+        width: 100%;
+        border: 1.5px solid var(--c-border);
+        border-radius: 6px;
+        padding: .5rem .75rem;
+        font-size: .875rem;
+        font-family: inherit;
+        color: var(--c-text);
+        background: #fff;
+        outline: none;
+        transition: border-color .15s, box-shadow .15s;
+        -webkit-appearance: none;
+        appearance: none;
+        box-sizing: border-box;
+    }
+    .dp-select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right .6rem center;
+        padding-right: 2rem;
+        cursor: pointer;
+    }
+    .dp-input:focus, .dp-select:focus {
+        border-color: var(--c-brand);
+        box-shadow: 0 0 0 3px rgba(42,63,132,.1);
+    }
+    .dp-error { font-size: .72rem; color: var(--c-danger); margin-top: .1rem; }
+
+    .dp-btn-add {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        background: var(--c-brand);
+        color: #fff;
+        font-size: .875rem;
+        font-weight: 600;
+        padding: .55rem 1.25rem;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background .15s, transform .1s;
+        width: 100%;
+        justify-content: center;
+    }
+    .dp-btn-add:hover  { background: #1e2f6b; }
+    .dp-btn-add:active { transform: scale(.97); }
+
+    .dp-table-wrap { overflow-x: auto; margin-top: 1.5rem; }
+
+    .dp-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 .4rem;
+        font-size: .85rem;
+    }
+    .dp-table thead th {
+        font-size: .67rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: var(--c-muted);
+        padding: .5rem .75rem;
+        text-align: left;
+        background: #F9FAFB;
+        border-top: 1px solid var(--c-border);
+        border-bottom: 1px solid var(--c-border);
+    }
+    .dp-table thead th:first-child { border-left: 1px solid var(--c-border); border-radius: 6px 0 0 6px; }
+    .dp-table thead th:last-child  { border-right: 1px solid var(--c-border); border-radius: 0 6px 6px 0; }
+
+    .dp-table tbody tr { background: #fff; transition: background .12s; }
+    .dp-table tbody tr:hover { background: #FAFBFF; }
+    .dp-table tbody td {
+        padding: .55rem .75rem;
+        vertical-align: middle;
+        border-top: 1px solid var(--c-border);
+        border-bottom: 1px solid var(--c-border);
+    }
+    .dp-table tbody td:first-child { border-left: 1px solid var(--c-border); border-radius: 6px 0 0 6px; }
+    .dp-table tbody td:last-child  { border-right: 1px solid var(--c-border); border-radius: 0 6px 6px 0; }
+
+    .dp-badge {
+        display: inline-block;
+        background: var(--c-brand-lt);
+        color: var(--c-brand);
+        font-size: .7rem;
+        font-weight: 700;
+        padding: .15rem .5rem;
+        border-radius: 4px;
+    }
+
+    .dp-btn-del {
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        background: var(--c-danger-lt);
+        color: var(--c-danger);
+        border: 1px solid #FECACA;
+        font-size: .75rem;
+        font-weight: 600;
+        padding: .3rem .7rem;
+        border-radius: 5px;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background .15s;
+    }
+    .dp-btn-del:hover { background: #FEE2E2; }
+
+    .dp-empty {
+        text-align: center;
+        color: var(--c-muted);
+        font-size: .82rem;
+        padding: 1.5rem 0;
+    }
+
+    .dp-divider {
+        border: none;
+        border-top: 1.5px dashed var(--c-border);
+        margin: 1.25rem 0;
+    }
+
+    .dp-count {
+        font-size: .72rem;
+        font-weight: 600;
+        color: var(--c-muted);
+        margin-bottom: .75rem;
+    }
+</style>
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="~/css/site.css" />
+
+<div class="dp-page">
+    <div class="dp-grid">
+
+        @* ── DEPARTMENT ──────────────────────────────────────────────────── *@
+        <div class="dp-card">
+            <div class="dp-card__header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <h2>Departments</h2>
+            </div>
+            <div class="dp-card__body">
+
+                @if (TempData["SuccessDept"] != null)
+                {
+                    <div class="dp-alert dp-alert--success">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        @TempData["SuccessDept"]
+                    </div>
+                }
+
+                @using (Html.BeginForm("AddDepartment", "DepartmentPost", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    <div class="dp-field">
+                        <label class="dp-label">Department Name <span class="req">*</span></label>
+                        @Html.TextBoxFor(m => m.NewDepartment.Name,
+                            new { @class = "dp-input", placeholder = "e.g. Finance Department", required = "required" })
+                        @Html.ValidationMessageFor(m => m.NewDepartment.Name, "", new { @class = "dp-error" })
+                    </div>
+                    <button type="submit" class="dp-btn-add">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Department
+                    </button>
+                }
+
+                <hr class="dp-divider" />
+                <div class="dp-count">@departments.Count Department@(departments.Count != 1 ? "s" : "") in database</div>
+
+                @if (!departments.Any())
+                {
+                    <div class="dp-empty">No departments added yet.</div>
+                }
+                else
+                {
+                    <div class="dp-table-wrap">
+                        <table class="dp-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:48px">#</th>
+                                    <th>Name</th>
+                                    <th style="width:80px; text-align:center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int di = 1;
+                                }
+                                @foreach (var dept in departments)
+                                {
+                                    <tr>
+                                        <td><span class="dp-badge">@(di++)</span></td>
+                                        <td>@dept.Name</td>
+                                        <td style="text-align:center">
+                                            @using (Html.BeginForm("DeleteDepartment", "DepartmentPost", FormMethod.Post))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@dept.Id" />
+                                                <button type="submit" class="dp-btn-del"
+                                                        onclick="return confirm('Delete @Html.Raw(dept.Name)?')">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                    Delete
+                                                </button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* ── POST ────────────────────────────────────────────────────────── *@
+        <div class="dp-card">
+            <div class="dp-card__header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <h2>Posts</h2>
+            </div>
+            <div class="dp-card__body">
+
+                @if (TempData["SuccessPost"] != null)
+                {
+                    <div class="dp-alert dp-alert--success">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        @TempData["SuccessPost"]
+                    </div>
+                }
+
+                @using (Html.BeginForm("AddPost", "DepartmentPost", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <div class="dp-field">
+                        <label class="dp-label">Department <span class="req">*</span></label>
+                        @Html.DropDownListFor(m => m.NewPost.DepartmentId,
+                            new SelectList(departments, "Id", "Name", Model.NewPost.DepartmentId),
+                            "Select department",
+                            new { @class = "dp-select", required = "required" })
+                        @Html.ValidationMessageFor(m => m.NewPost.DepartmentId, "", new { @class = "dp-error" })
+                    </div>
+
+                    <div class="dp-field">
+                        <label class="dp-label">Post Name <span class="req">*</span></label>
+                        @Html.TextBoxFor(m => m.NewPost.Name,
+                            new { @class = "dp-input", placeholder = "e.g. Sub-Inspector of Police", required = "required" })
+                        @Html.ValidationMessageFor(m => m.NewPost.Name, "", new { @class = "dp-error" })
+                    </div>
+
+                    <button type="submit" class="dp-btn-add">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Post
+                    </button>
+                }
+
+                <hr class="dp-divider" />
+                <div class="dp-count">@posts.Count Post@(posts.Count != 1 ? "s" : "") in database</div>
+
+                @if (!posts.Any())
+                {
+                    <div class="dp-empty">No posts added yet.</div>
+                }
+                else
+                {
+                    <div class="dp-table-wrap">
+                        <table class="dp-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:48px">#</th>
+                                    <th>Post Name</th>
+                                    <th>Department</th>
+                                    <th style="width:80px; text-align:center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int pi = 1;
+                                }
+                                @foreach (var post in posts)
+                                {
+                                    <tr>
+                                        <td><span class="dp-badge">@(pi++)</span></td>
+                                        <td>@post.Name</td>
+                                        <td style="font-size:.78rem; color:var(--c-muted)">@post.DepartmentName</td>
+                                        <td style="text-align:center">
+                                            @using (Html.BeginForm("DeletePost", "DepartmentPost", FormMethod.Post))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@post.Id" />
+                                                <button type="submit" class="dp-btn-del"
+                                                        onclick="return confirm('Delete @Html.Raw(post.Name)?')">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                    Delete
+                                                </button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>

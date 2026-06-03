@@ -1,8 +1,356 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model SPSCReady.Admin.Models.OverviewViewModel
+
+@{
+    ViewData["Title"] = "Overview";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Format large numbers: 104200 → 104.2k
+    string FormatNumber(long n)
+    {
+        if (n >= 1_000_000) return (n / 1_000_000.0).ToString("0.#") + "M";
+        if (n >= 1_000) return (n / 1_000.0).ToString("0.#") + "k";
+        return n.ToString("N0");
+    }
+
+    var sortOptions = new[] { "Views (High to Low)", "Views (Low to High)", "Year (Newest)", "Year (Oldest)" };
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    .ov-page {
+        font-family: 'Segoe UI', sans-serif;
+        color: #1a1a2e;
+    }
+
+    /* page title */
+    .ov-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .ov-subtitle {
+        font-size: .82rem;
+        color: #888;
+        margin: .15rem 0 1.5rem;
+    }
+
+    /* stat cards */
+    .ov-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .ov-stat {
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        border-radius: 10px;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .ov-stat__icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .ov-stat__icon--blue {
+        background: #e7f1ff;
+        color: #0d6efd;
+    }
+
+    .ov-stat__icon--green {
+        background: #e6f9f0;
+        color: #10b981;
+    }
+
+    .ov-stat__icon--purple {
+        background: #f0ebff;
+        color: #7c3aed;
+    }
+
+    .ov-stat__label {
+        font-size: .7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: #999;
+        margin-bottom: .2rem;
+    }
+
+    .ov-stat__value {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #111;
+        line-height: 1;
+    }
+
+    /* table card */
+    .ov-card {
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .ov-card__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+        .ov-card__head h3 {
+            font-size: .95rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+    .ov-sort {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        font-size: .8rem;
+        color: #666;
+    }
+
+        .ov-sort select {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: .3rem .6rem;
+            font-size: .8rem;
+            font-family: inherit;
+            color: #333;
+            background: #fff;
+            outline: none;
+            cursor: pointer;
+        }
+
+    /* table */
+    .ov-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: .875rem;
+    }
+
+        .ov-table thead th {
+            font-size: .67rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: #aaa;
+            padding: .75rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fafafa;
+        }
+
+        .ov-table tbody tr {
+            border-bottom: 1px solid #f5f5f5;
+            transition: background .12s;
+        }
+
+            .ov-table tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            .ov-table tbody tr:hover {
+                background: #fafbff;
+            }
+
+        .ov-table tbody td {
+            padding: .9rem 1.5rem;
+            vertical-align: middle;
+            color: #333;
+        }
+
+    .ov-exam-title {
+        font-weight: 600;
+        font-size: .875rem;
+    }
+
+    /* status badge */
+    .ov-badge {
+        display: inline-block;
+        font-size: .72rem;
+        font-weight: 600;
+        padding: .25rem .65rem;
+        border-radius: 20px;
+    }
+
+    .ov-badge--published {
+        background: #e6f9f0;
+        color: #059669;
+    }
+
+    .ov-badge--draft {
+        background: #fff7e6;
+        color: #d97706;
+    }
+
+    .ov-badge--archived {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    /* views cell */
+    .ov-views {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+        color: #555;
+        font-size: .875rem;
+    }
+
+        .ov-views svg {
+            color: #aaa;
+        }
+
+    /* empty state */
+    .ov-empty {
+        text-align: center;
+        padding: 3rem;
+        color: #aaa;
+        font-size: .875rem;
+    }
+
+    .ov-year {
+        color: #666;
+    }
+</style>
+
+<div class="ov-page">
+
+    <div class="ov-title">Overview</div>
+    <div class="ov-subtitle">Dashboard summary and question bank analytics.</div>
+
+    @* ── Stat cards ──────────────────────────────────────────────────────── *@
+    <div class="ov-stats">
+
+        <div class="ov-stat">
+            <div class="ov-stat__icon ov-stat__icon--blue">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m4-4a4 4 0 100-8 4 4 0 000 8z" />
+                </svg>
+            </div>
+            <div>
+                <div class="ov-stat__label">Total Active Users</div>
+                <div class="ov-stat__value">@FormatNumber(Model.TotalActiveUsers)</div>
+            </div>
+        </div>
+
+        <div class="ov-stat">
+            <div class="ov-stat__icon ov-stat__icon--green">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0121 9.414V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <div>
+                <div class="ov-stat__label">Total Papers</div>
+                <div class="ov-stat__value">@FormatNumber(Model.TotalPapers)</div>
+            </div>
+        </div>
+
+        <div class="ov-stat">
+            <div class="ov-stat__icon ov-stat__icon--purple">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+            </div>
+            <div>
+                <div class="ov-stat__label">Total Views</div>
+                <div class="ov-stat__value">@FormatNumber(Model.TotalViews)</div>
+            </div>
+        </div>
+
+    </div>
+
+    @* ── Paper performance table ──────────────────────────────────────────── *@
+    <div class="ov-card">
+        <div class="ov-card__head">
+            <h3>Paper Performance Details</h3>
+            <div class="ov-sort">
+                Sort by:
+                <select id="sortSelect" onchange="sortTable(this.value)">
+                    <option value="views-desc">Views (High to Low)</option>
+                    <option value="views-asc">Views (Low to High)</option>
+                    <option value="year-desc">Year (Newest)</option>
+                    <option value="year-asc">Year (Oldest)</option>
+                </select>
+            </div>
+        </div>
+
+        @if (!Model.Papers.Any())
+        {
+            <div class="ov-empty">No papers uploaded yet.</div>
+        }
+        else
+        {
+            <table class="ov-table" id="papersTable">
+                <thead>
+                    <tr>
+                        <th>Exam Title</th>
+                        <th>Year</th>
+                        <th>Status</th>
+                        <th>Total Views</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Papers)
+                    {
+                        var badgeClass = p.Status.ToLower() switch
+                        {
+                            "published" => "ov-badge--published",
+                            "draft" => "ov-badge--draft",
+                            _ => "ov-badge--archived"
+                        };
+                        <tr data-views="@p.TotalViews" data-year="@p.Year">
+                            <td class="ov-exam-title">@p.ExamTitle</td>
+                            <td class="ov-year">@p.Year</td>
+                            <td><span class="ov-badge @badgeClass">@p.Status</span></td>
+                            <td>
+                                <div class="ov-views">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    @p.TotalViews.ToString("N0")
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        function sortTable(val) {
+            var tbody = document.querySelector('#papersTable tbody');
+            if (!tbody) return;
+            var rows = Array.from(tbody.querySelectorAll('tr'));
+
+            rows.sort(function(a, b) {
+                if (val === 'views-desc') return parseInt(b.dataset.views) - parseInt(a.dataset.views);
+                if (val === 'views-asc')  return parseInt(a.dataset.views) - parseInt(b.dataset.views);
+                if (val === 'year-desc')  return parseInt(b.dataset.year)  - parseInt(a.dataset.year);
+                if (val === 'year-asc')   return parseInt(a.dataset.year)  - parseInt(b.dataset.year);
+                return 0;
+            });
+
+            rows.forEach(function(r) { tbody.appendChild(r); });
+        }
+    </script>
+}
