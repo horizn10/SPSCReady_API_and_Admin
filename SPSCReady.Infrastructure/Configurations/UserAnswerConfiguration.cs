@@ -26,8 +26,7 @@ public class UserAnswerConfiguration : IEntityTypeConfiguration<UserAnswer>
                .HasColumnType("decimal(6,2)");
 
         builder.Property(x => x.IsMarkedForReview)
-               .IsRequired()
-               .HasDefaultValue(false);
+               .IsRequired();
 
         builder.Property(x => x.AnsweredAt);
 

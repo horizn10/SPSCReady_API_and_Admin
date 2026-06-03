@@ -8,4 +8,5 @@ public interface IAttemptService
     Task<AttemptResultDto> SubmitAttemptAsync(SubmitAttemptRequestDto dto, string userId);
     Task<AttemptResultDto?> GetAttemptResultAsync(int attemptId, string userId);
     Task<List<AttemptSummaryDto>> GetUserAttemptsAsync(string userId);
+    Task<bool> ExpireAttemptAsync(int attemptId, string userId);
 }
