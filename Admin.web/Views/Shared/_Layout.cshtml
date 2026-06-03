@@ -3,47 +3,61 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Admin.Web</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Admin.Web.styles.css" asp-append-version="true" />
+    <title>@ViewData["Title"] - SPSC Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+            body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+            .sidebar { height: 100vh; width: 250px; position: fixed; top: 0; left: 0; background-color: #ffffff; border-right: 1px solid #e0e0e0; padding-top: 20px; }
+            .sidebar-brand { padding: 0 20px 20px 20px; font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #e0e0e0; margin-bottom: 20px;}
+            .sidebar-brand .icon-box { background: #0d6efd; color: white; padding: 5px 10px; border-radius: 5px; }
+            .nav-link { color: #555; padding: 10px 20px; display: flex; align-items: center; gap: 15px; margin: 5px 15px; border-radius: 8px; font-weight: 500; }
+            .nav-link:hover, .nav-link.active { background-color: #e9ecef; color: #0d6efd; }
+            .nav-link.active { background-color: #e7f1ff; }
+            .main-content { margin-left: 250px; padding: 0; }
+            .top-navbar { background: white; height: 70px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: flex-end; align-items: center; padding: 0 30px; }
+            .top-nav-items { display: flex; gap: 20px; align-items: center; font-size: 0.9rem; color: #555;}
+            .content-area { padding: 30px; }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Admin.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <div class="icon-box"><i class="bi bi-journal-text"></i></div>
+            <div>
+                <div style="line-height: 1;">SPSC</div>
+                <div style="font-size: 0.7rem; color: #888; font-weight: normal;">Smart Question Bank</div>
             </div>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link @(ViewData["Title"]?.ToString() == "Overview" ? "active" : "")" href="/">
+                <i class="bi bi-house-door"></i> Overview
+            </a>
+            <a class="nav-link @(ViewData["Title"]?.ToString() == "Upload Question Paper" ? "active" : "")" href="/Upload">
+                <i class="bi bi-file-earmark-plus"></i> Manage Paper
+            </a>
+            <a class="nav-link @(ViewData["Title"]?.ToString() == "Manage Departments & Posts" ? "active" : "")" href="/DepartmentPost">
+                <i class="bi bi-gear"></i> Master Settings
+            </a>
+           
         </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Admin.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <div class="main-content">
+        <div class="top-navbar">
+            <div class="top-nav-items">
+                <span class="badge bg-light text-dark border"><i class="bi bi-person"></i> Admin Panel</span>
+                <a href="#" class="text-decoration-none text-dark">My Profile</a>
+                <a href="#" class="text-decoration-none text-dark">Logout</a>
+            </div>
         </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+
+        <div class="content-area">
+            @RenderBody()
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
