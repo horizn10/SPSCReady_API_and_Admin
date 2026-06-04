@@ -10,5 +10,7 @@ public interface IAttemptRepository
     Task<List<UserAttempt>> GetByUserIdAsync(string userId);
     Task<UserAttempt?> GetExistingAttemptAsync(string userId, int mockTestId);
     Task AddAnswersAsync(List<UserAnswer> answers);
+    Task DeleteAnswersByAttemptIdAsync(int attemptId);
     Task UpdateAsync(UserAttempt attempt);
+
 }

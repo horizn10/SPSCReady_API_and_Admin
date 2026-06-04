@@ -27,10 +27,43 @@ public class AttemptService : IAttemptService
         var mockTest = await _mockTestRepository.GetByIdAsync(mockTestId)
             ?? throw new InvalidOperationException("MockTest not found");
 
-        // Check if user already has an attempt for this test
+        // Check if user already has an attempt for this test.
+        // If the attempt is InProgress but already expired, mark it Expired and allow retry.
         var existingAttempt = await _attemptRepository.GetExistingAttemptAsync(userId, mockTestId);
-        if (existingAttempt != null && existingAttempt.Status == AttemptStatus.InProgress)
-            throw new InvalidOperationException("User already has an in-progress attempt for this test");
+
+        // Unique key is (UserId, MockTestId). So if a row exists, we reuse it instead of inserting.
+        // Rule (best-practice):
+        // - InProgress and not expired => reject (already running)
+        // - Expired/InProgress-but-over => mark expired and start new InProgress window
+        // - Submitted => allow retry by resetting to a fresh InProgress attempt window
+        if (existingAttempt != null)
+        {
+            var isExpiredWindow = DateTime.UtcNow > existingAttempt.ExpiresAt;
+
+            if (existingAttempt.Status == AttemptStatus.InProgress && !isExpiredWindow)
+                throw new InvalidOperationException("User already has an in-progress attempt for this test");
+
+            // Reset attempt window + score fields
+            existingAttempt.StartedAt = DateTime.UtcNow;
+            existingAttempt.ExpiresAt = DateTime.UtcNow.AddMinutes(mockTest.DurationMinutes);
+            existingAttempt.Status = AttemptStatus.InProgress;
+
+            existingAttempt.CorrectCount = 0;
+            existingAttempt.WrongCount = 0;
+            existingAttempt.SkippedCount = 0;
+            existingAttempt.TotalScore = 0;
+            existingAttempt.Percentage = 0;
+
+            existingAttempt.SubmittedAt = null;
+
+            // NOTE: existing UserAnswers are not deleted here.
+            // If you want a clean retry, delete UserAnswers for this attempt as well.
+            await _attemptRepository.UpdateAsync(existingAttempt);
+            return new StartAttemptResponseDto(
+                existingAttempt.AttemptId,
+                existingAttempt.ExpiresAt,
+                mockTest.DurationMinutes);
+        }
 
         // Create new attempt with default values for all score-related fields
         var attempt = new UserAttempt
@@ -48,6 +81,7 @@ public class AttemptService : IAttemptService
         };
 
         var created = await _attemptRepository.CreateAsync(attempt);
+
 
         return new StartAttemptResponseDto(
             created.AttemptId,
@@ -73,12 +107,17 @@ public class AttemptService : IAttemptService
         if (DateTime.UtcNow > attempt.ExpiresAt)
             throw new InvalidOperationException("Attempt time has expired. You cannot submit after the deadline.");
 
+        // If this attempt already has answers (e.g., retry/resume), remove them first.
+        // This prevents unique constraint conflicts on (AttemptId, QuestionId).
+        await _attemptRepository.DeleteAnswersByAttemptIdAsync(attempt.AttemptId);
+
         // Create UserAnswer records and calculate scores
         var userAnswers = new List<UserAnswer>();
         decimal totalScore = 0;
         int correctCount = 0;
         int wrongCount = 0;
         int skippedCount = 0;
+
 
         foreach (var answerDto in dto.Answers)
         {

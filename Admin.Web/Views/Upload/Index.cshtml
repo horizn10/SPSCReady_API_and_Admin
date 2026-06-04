@@ -310,9 +310,9 @@
 
                 @* Title *@
                 <div class="up-field">
-                    <label class="up-label">Paper Title <span class="req">*</span></label>
+                    <label class="up-label">Exam Title <span class="req">*</span></label>
                     @Html.TextBoxFor(m => m.Title,
-                        new { @class = "up-input", placeholder = "e.g. Prelims 2024", required = "required" })
+                        new { @class = "up-input", placeholder = "e.g. Sub Inspector (2024)", required = "required" })
                     @Html.ValidationMessageFor(m => m.Title, "", new { @class = "up-error" })
                 </div>
 

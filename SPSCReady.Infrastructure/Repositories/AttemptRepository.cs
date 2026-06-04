@@ -48,17 +48,34 @@ public class AttemptRepository : IAttemptRepository
             .ToListAsync();
     }
 
+    // Fetch by unique key (UserId, MockTestId) regardless of status.
     public async Task<UserAttempt?> GetExistingAttemptAsync(string userId, int mockTestId)
     {
         return await _context.UserAttempts
-            .FirstOrDefaultAsync(a => a.UserId == userId && a.MockTestId == mockTestId && a.Status == AttemptStatus.InProgress);
+            .FirstOrDefaultAsync(a => a.UserId == userId && a.MockTestId == mockTestId);
     }
+
 
     public async Task AddAnswersAsync(List<UserAnswer> answers)
     {
         _context.UserAnswers.AddRange(answers);
         await _context.SaveChangesAsync();
     }
+
+    public async Task DeleteAnswersByAttemptIdAsync(int attemptId)
+    {
+        // Delete existing answers so retry/resume doesn't violate unique (AttemptId, QuestionId)
+        var existing = await _context.UserAnswers
+            .Where(a => a.AttemptId == attemptId)
+            .ToListAsync();
+
+        if (existing.Count == 0) return;
+
+        _context.UserAnswers.RemoveRange(existing);
+        await _context.SaveChangesAsync();
+    }
+
+
 
     public async Task UpdateAsync(UserAttempt attempt)
     {
