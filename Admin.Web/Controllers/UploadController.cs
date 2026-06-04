@@ -1,24 +1,23 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using MyApp.Admin.Models;
+using SPSCReady.Admin.Models;
+using SPSCReady.Application.Interfaces;
 using SPSCReady.Domain.Entities;
 using SPSCReady.Infrastructure.Data;
 
-namespace MyApp.Admin.Controllers
+namespace SPSCReady.Admin.Controllers
 {
     public class UploadController : Controller
     {
         private readonly ApplicationDbContext _db;
-        private readonly IWebHostEnvironment _env;
+        private readonly IR2StorageService _r2;
 
-        public UploadController(ApplicationDbContext db, IWebHostEnvironment env)
+        public UploadController(ApplicationDbContext db, IR2StorageService r2)
         {
             _db = db;
-            _env = env;
+            _r2 = r2;
         }
 
-        // ── GET /Upload/Index ────────────────────────────────────────────────
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -26,29 +25,23 @@ namespace MyApp.Admin.Controllers
             return View(new ExamPaperCreateModel());
         }
 
-        // ── POST /Upload/Create ──────────────────────────────────────────────
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ExamPaperCreateModel model)
         {
-            // ── Extra file validations (ModelState won't cover these) ────────
             for (int i = 0; i < model.SubjectPapers.Count; i++)
             {
                 var p = model.SubjectPapers[i];
                 if (p.PdfFile == null || p.PdfFile.Length == 0)
                 {
-                    ModelState.AddModelError($"SubjectPapers[{i}].PdfFile",
-                        $"Paper {i + 1}: please upload a PDF.");
+                    ModelState.AddModelError($"SubjectPapers[{i}].PdfFile", $"Paper {i + 1}: please upload a PDF.");
                     continue;
                 }
                 var ext = Path.GetExtension(p.PdfFile.FileName).ToLowerInvariant();
                 if (ext != ".pdf")
-                    ModelState.AddModelError($"SubjectPapers[{i}].PdfFile",
-                        $"Paper {i + 1}: only PDF files are accepted.");
-
+                    ModelState.AddModelError($"SubjectPapers[{i}].PdfFile", $"Paper {i + 1}: only PDF files are accepted.");
                 if (p.PdfFile.Length > 20 * 1024 * 1024)
-                    ModelState.AddModelError($"SubjectPapers[{i}].PdfFile",
-                        $"Paper {i + 1}: file must be under 20 MB.");
+                    ModelState.AddModelError($"SubjectPapers[{i}].PdfFile", $"Paper {i + 1}: file must be under 20 MB.");
             }
 
             if (!ModelState.IsValid)
@@ -57,7 +50,6 @@ namespace MyApp.Admin.Controllers
                 return View("Index", model);
             }
 
-            // ── 1. Create the parent ExamPaper row ───────────────────────────
             var examPaper = new ExamPaper
             {
                 Title = model.Title,
@@ -66,53 +58,22 @@ namespace MyApp.Admin.Controllers
                 UploadedBy = User.Identity?.Name ?? "admin"
             };
             _db.ExamPapers.Add(examPaper);
-            await _db.SaveChangesAsync(); // get the generated ExamPaper.Id
-
+            await _db.SaveChangesAsync();
             int examId = examPaper.Id;
 
-            // ── 2. ExamPaperDepartments ──────────────────────────────────────
-            var examDept = new ExamPaperDept
-            {
-                ExamId = examId,
-                DepartmentId = model.DepartmentId
-            };
-            _db.ExamPaperDepartments.Add(examDept);
+            _db.ExamPaperDepartments.Add(new ExamPaperDept { ExamId = examId, DepartmentId = model.DepartmentId });
+            _db.ExamPaperPosts.Add(new ExamPaperPost { ExamId = examId, PostId = model.PostId });
 
-            // ── 3. ExamPaperPosts ────────────────────────────────────────────
-            var examPost = new ExamPaperPost
+            foreach (var stageId in model.SubjectPapers.Select(p => p.StageId).Distinct())
             {
-                ExamId = examId,
-                PostId = model.PostId
-            };
-            _db.ExamPaperPosts.Add(examPost);
-
-            // ── 4. ExamPaperStages (unique per stage used) ───────────────────
-            var uniqueStageIds = model.SubjectPapers
-                .Select(p => p.StageId)
-                .Distinct();
-
-            foreach (var stageId in uniqueStageIds)
-            {
-                bool stageExists = await _db.ExamPaperStages
+                bool exists = await _db.ExamPaperStages
                     .AnyAsync(s => s.ExamId == examId && s.StageId == stageId);
-
-                if (!stageExists)
-                {
-                    _db.ExamPaperStages.Add(new ExamPaperStage
-                    {
-                        ExamId = examId,
-                        StageId = stageId
-                    });
-                }
+                if (!exists)
+                    _db.ExamPaperStages.Add(new ExamPaperStage { ExamId = examId, StageId = stageId });
             }
-
-            // ── 5. ExamPaperSubjects (one per uploaded paper) ────────────────
-            var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", "papers");
-            Directory.CreateDirectory(uploadsDir);
 
             foreach (var paper in model.SubjectPapers)
             {
-                // Resolve or create the Subject row from SubjectName + StageId
                 var subject = await _db.Subjects
                     .FirstOrDefaultAsync(s =>
                         s.StageId == paper.StageId &&
@@ -126,17 +87,10 @@ namespace MyApp.Admin.Controllers
                         StageId = paper.StageId
                     };
                     _db.Subjects.Add(subject);
-                    await _db.SaveChangesAsync(); // get Subject.Id
+                    await _db.SaveChangesAsync();
                 }
 
-                // Save PDF to disk
-                var safeFileName = $"{Guid.NewGuid()}_{Path.GetFileName(paper.PdfFile!.FileName)}";
-                var filePath = Path.Combine(uploadsDir, safeFileName);
-                await using var stream = new FileStream(filePath, FileMode.Create);
-                await paper.PdfFile.CopyToAsync(stream);
-
-                // Relative URL stored in DB  e.g. /uploads/papers/abc123_paper.pdf
-                var relativeUrl = $"/uploads/papers/{safeFileName}";
+                string publicUrl = await _r2.UploadAsync(paper.PdfFile!, folder: "papers");
 
                 _db.ExamPaperSubjects.Add(new ExamPaperSubject
                 {
@@ -144,21 +98,16 @@ namespace MyApp.Admin.Controllers
                     StageId = paper.StageId,
                     SubjectId = subject.Id,
                     SubjectName = paper.SubjectName.Trim(),
-                    Url = relativeUrl,
+                    Url = publicUrl,
                     Date = DateTime.UtcNow
                 });
             }
 
             await _db.SaveChangesAsync();
-
-            TempData["Success"] =
-                $"'{model.Title}' uploaded successfully with {model.SubjectPapers.Count} paper(s).";
-
+            TempData["Success"] = $"'{model.Title}' uploaded with {model.SubjectPapers.Count} paper(s).";
             return RedirectToAction(nameof(Index));
         }
 
-        // ── API: GET /api/papers/posts?departmentId={id} ─────────────────────
-        // Used by the JS dropdown to load posts when department changes.
         [HttpGet("/api/papers/posts")]
         public async Task<IActionResult> GetPostsByDepartment([FromQuery] int departmentId)
         {
@@ -166,11 +115,9 @@ namespace MyApp.Admin.Controllers
                 .Where(p => p.DepartmentId == departmentId)
                 .Select(p => new { p.Id, p.Name })
                 .ToListAsync();
-
             return Json(posts);
         }
 
-        // ── Helper ───────────────────────────────────────────────────────────
         private async Task PopulateViewBagAsync()
         {
             ViewBag.Departments = await _db.Departments
