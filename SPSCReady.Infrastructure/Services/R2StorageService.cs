@@ -1,10 +1,9 @@
-using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using SPSCReady.Application.Interfaces;
+using SPSCReady.Application.Interfaces; // Assuming this matches your project structure
 
 namespace SPSCReady.Infrastructure.Services;
 
@@ -18,20 +17,34 @@ public class R2StorageService : IR2StorageService
     {
         var r2 = config.GetSection("Cloudflare:R2");
 
-        var credentials = new BasicAWSCredentials(
-            r2["AccessKeyId"],
-            r2["SecretAccessKey"]);
+        // 1. Defensive Checks: Prevent silent fallbacks to local machine AWS credentials
+        var accessKey = r2["AccessKeyId"];
+        var secretKey = r2["SecretAccessKey"];
+        var accountId = r2["AccountId"];
+        var bucketName = r2["BucketName"];
+        var publicBaseUrl = r2["PublicBaseUrl"];
+
+        if (string.IsNullOrWhiteSpace(accessKey) ||
+            string.IsNullOrWhiteSpace(secretKey) ||
+            string.IsNullOrWhiteSpace(accountId) ||
+            string.IsNullOrWhiteSpace(bucketName))
+        {
+            throw new ArgumentException("Cloudflare R2 configuration values are missing or empty in appsettings.json.");
+        }
+
+        var credentials = new BasicAWSCredentials(accessKey, secretKey);
 
         var s3Config = new AmazonS3Config
         {
-            ServiceURL = $"https://{r2["AccountId"]}.r2.cloudflarestorage.com",
+            ServiceURL = $"https://{accountId}.r2.cloudflarestorage.com",
             ForcePathStyle = true,
-            RegionEndpoint = RegionEndpoint.USEast1
+            // 2. The Critical Fix: Use "auto" instead of a hardcoded AWS region
+            AuthenticationRegion = "auto"
         };
 
         _s3Client = new AmazonS3Client(credentials, s3Config);
-        _bucket = r2["BucketName"]!;
-        _publicBaseUrl = r2["PublicBaseUrl"]!.TrimEnd('/');
+        _bucket = bucketName;
+        _publicBaseUrl = publicBaseUrl?.TrimEnd('/') ?? string.Empty;
     }
 
     // ── IFormFile version — used by Admin panel ──────────────────────────
