@@ -13,6 +13,13 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Explicitly configure configuration to load appsettings files
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
 builder.Services.AddControllers();
 
 // Register Swagger/OpenAPI with JWT Authorization support
@@ -101,7 +108,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPaperService, PaperService>();
-builder.Services.AddSingleton<IR2StorageService, R2StorageService>();
+builder.Services.AddScoped<IR2StorageService, R2StorageService>();
 
 // MockTest Module Services and Repositories
 builder.Services.AddScoped<IMockTestService, MockTestService>();

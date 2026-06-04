@@ -1,18 +1,21 @@
 using Microsoft.EntityFrameworkCore;
+using SPSCReady.Application.Interfaces;
 using SPSCReady.Infrastructure.Data;
+using SPSCReady.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Register ApplicationDbContext
+// ── Database ─────────────────────────────────────────────────────────────────
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// ── Cloudflare R2 storage ────────────────────────────────────────────────────
+builder.Services.AddSingleton<IR2StorageService, R2StorageService>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -21,9 +24,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapControllerRoute(
