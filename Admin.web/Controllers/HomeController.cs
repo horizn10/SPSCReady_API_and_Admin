@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SPSCReady.Admin.Models;
+using SPSCReady.Domain.Entities;
 using SPSCReady.Infrastructure.Data;
 
 namespace SPSCReady.Admin.Controllers

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace MyApp.Admin.Models
+namespace SPSCReady.Admin.Models
 {
     /// <summary>
     /// Form model for uploading a question paper.
