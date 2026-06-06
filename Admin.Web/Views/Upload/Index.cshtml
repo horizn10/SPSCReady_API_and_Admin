@@ -9,6 +9,8 @@
     var stages = ViewBag.Stages as List<ExamStageDto> ?? new List<ExamStageDto>();
     var stageOptionsHtml = string.Join("",
         stages.Select(s => "<option value=\"" + s.Id + "\">" + s.Name + "</option>"));
+
+    var activeTab = TempData["ActiveTab"]?.ToString() ?? "upload";
 }
 
 <style>
@@ -18,6 +20,7 @@
         --c-success    : #10B981;
         --c-success-lt : #ECFDF5;
         --c-danger     : #EF4444;
+        --c-danger-lt  : #FEF2F2;
         --c-border     : #E5E7EB;
         --c-text       : #1F2937;
         --c-muted      : #6B7280;
@@ -28,16 +31,46 @@
         --font-mono    : 'JetBrains Mono', monospace;
     }
 
-    .up-page  { font-family: var(--font-main); color: var(--c-text); }
+    .up-page { font-family: var(--font-main); color: var(--c-text); }
 
-    .up-card  {
+    /* ── Tabs ── */
+    .up-tabs {
+        display: flex;
+        gap: 0;
+        border-bottom: 2px solid var(--c-border);
+        margin-bottom: 1.5rem;
+    }
+    .up-tab {
+        padding: .7rem 1.5rem;
+        font-size: .875rem;
+        font-weight: 600;
+        color: var(--c-muted);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+        transition: color .15s, border-color .15s;
+        background: none;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        font-family: inherit;
+    }
+    .up-tab:hover { color: var(--c-brand); }
+    .up-tab.active { color: var(--c-brand); border-bottom-color: var(--c-brand); }
+    .up-tab-panel { display: none; }
+    .up-tab-panel.active { display: block; }
+
+    /* ── Card ── */
+    .up-card {
         background: var(--c-surface);
         border-radius: var(--radius);
         box-shadow: var(--shadow-card);
         border: 1px solid var(--c-border);
         overflow: hidden;
     }
-
     .up-card__header {
         background: var(--c-brand);
         padding: 1rem 1.5rem;
@@ -45,15 +78,10 @@
         align-items: center;
         gap: .75rem;
     }
-    .up-card__header h2 {
-        color: #fff;
-        font-size: 1rem;
-        font-weight: 600;
-        margin: 0;
-    }
+    .up-card__header h2 { color: #fff; font-size: 1rem; font-weight: 600; margin: 0; }
     .up-card__header svg { color: rgba(255,255,255,.7); flex-shrink: 0; }
 
-    /* alerts */
+    /* ── Alerts ── */
     .up-alert {
         margin: 1rem 1.5rem 0;
         padding: .75rem 1rem;
@@ -70,35 +98,24 @@
         margin: 1rem 1.5rem 0;
         padding: .75rem 1rem;
         border-radius: 6px;
-        background: #FEF2F2;
+        background: var(--c-danger-lt);
         border: 1px solid #FECACA;
         color: #991B1B;
         font-size: .82rem;
     }
-    .up-validation-summary ul { margin: .25rem 0 0 1rem; padding: 0; }
-    .up-validation-summary li { margin-bottom: .15rem; }
 
-    /* form grid */
+    /* ── Form grid ── */
     .up-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 1.25rem;
         padding: 1.5rem;
     }
-
     .up-field { display: flex; flex-direction: column; gap: .4rem; }
-
-    .up-label {
-        font-size: .7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .06em;
-        color: var(--c-muted);
-    }
+    .up-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--c-muted); }
     .up-label .req { color: var(--c-danger); margin-left: 2px; }
 
-    .up-input,
-    .up-select {
+    .up-input, .up-select {
         width: 100%;
         border: 1.5px solid var(--c-border);
         border-radius: 6px;
@@ -120,340 +137,479 @@
         padding-right: 2rem;
         cursor: pointer;
     }
-    .up-input:focus, .up-select:focus {
-        border-color: var(--c-brand);
-        box-shadow: 0 0 0 3px rgba(42,63,132,.1);
-    }
-    .up-input:disabled, .up-select:disabled {
-        background: #F9FAFB;
-        color: #9CA3AF;
-        cursor: not-allowed;
-    }
+    .up-input:focus, .up-select:focus { border-color: var(--c-brand); box-shadow: 0 0 0 3px rgba(42,63,132,.1); }
+    .up-input:disabled, .up-select:disabled { background: #F9FAFB; color: #9CA3AF; cursor: not-allowed; }
     .up-error { font-size: .72rem; color: var(--c-danger); }
+    .up-divider { border: none; border-top: 1.5px dashed var(--c-border); margin: 0 1.5rem; }
 
-    .up-divider {
-        border: none;
-        border-top: 1.5px dashed var(--c-border);
-        margin: 0 1.5rem;
-    }
-
-    /* papers table */
+    /* ── Papers table (upload tab) ── */
     .up-papers-section { padding: 1.5rem; }
-    .up-papers-section h3 {
-        font-size: .78rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .07em;
-        color: var(--c-muted);
-        margin: 0 0 1rem;
-    }
-
+    .up-papers-section h3 { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--c-muted); margin: 0 0 1rem; }
     .up-table-wrap { overflow-x: auto; }
-    .up-table {
-        width: 100%;
-        min-width: 720px;
-        border-collapse: separate;
-        border-spacing: 0 .5rem;
-    }
+    .up-table { width: 100%; min-width: 720px; border-collapse: separate; border-spacing: 0 .5rem; }
     .up-table thead th {
-        font-size: .68rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .07em;
-        color: var(--c-muted);
-        padding: .5rem .75rem;
-        text-align: left;
-        background: #F9FAFB;
-        border-top: 1px solid var(--c-border);
-        border-bottom: 1px solid var(--c-border);
+        font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+        color: var(--c-muted); padding: .5rem .75rem; text-align: left;
+        background: #F9FAFB; border-top: 1px solid var(--c-border); border-bottom: 1px solid var(--c-border);
     }
     .up-table thead th:first-child { border-left: 1px solid var(--c-border); border-radius: 6px 0 0 6px; }
     .up-table thead th:last-child  { border-right: 1px solid var(--c-border); border-radius: 0 6px 6px 0; }
-
     .up-row { background: #fff; transition: background .15s; }
     .up-row:hover { background: #FAFBFF; }
-    .up-row td {
-        padding: .5rem .75rem;
-        vertical-align: middle;
-        border-top: 1px solid var(--c-border);
-        border-bottom: 1px solid var(--c-border);
-    }
+    .up-row td { padding: .5rem .75rem; vertical-align: middle; border-top: 1px solid var(--c-border); border-bottom: 1px solid var(--c-border); }
     .up-row td:first-child { border-left: 1px solid var(--c-border); border-radius: 6px 0 0 6px; }
     .up-row td:last-child  { border-right: 1px solid var(--c-border); border-radius: 0 6px 6px 0; }
-
-    .up-serial {
-        width: 2.2rem;
-        height: 2.2rem;
-        border-radius: 6px;
-        background: var(--c-brand-lt);
-        color: var(--c-brand);
-        font-size: .78rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: var(--font-mono);
-    }
-
-    .up-upload-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: .45rem;
-        border: 1.5px dashed #93C5FD;
-        background: #EFF6FF;
-        color: #2563EB;
-        padding: .45rem .85rem;
-        border-radius: 6px;
-        font-size: .8rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all .18s;
-        white-space: nowrap;
-        font-family: inherit;
-    }
+    .up-serial { width: 2.2rem; height: 2.2rem; border-radius: 6px; background: var(--c-brand-lt); color: var(--c-brand); font-size: .78rem; font-weight: 700; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); }
+    .up-upload-btn { display: inline-flex; align-items: center; gap: .45rem; border: 1.5px dashed #93C5FD; background: #EFF6FF; color: #2563EB; padding: .45rem .85rem; border-radius: 6px; font-size: .8rem; font-weight: 600; cursor: pointer; transition: all .18s; white-space: nowrap; font-family: inherit; }
     .up-upload-btn:hover { background: #DBEAFE; border-color: #3B82F6; }
-    .up-upload-btn.ok    { background: var(--c-success-lt); border-color: #34D399; color: #059669; }
+    .up-upload-btn.ok { background: var(--c-success-lt); border-color: #34D399; color: #059669; }
 
-    /* footer */
-    .up-footer {
-        padding: 1rem 1.5rem;
-        display: flex;
-        justify-content: flex-end;
-        gap: .75rem;
-        border-top: 1px solid var(--c-border);
-        background: #FAFAFA;
-    }
-    .up-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: .4rem;
-        font-size: .875rem;
-        font-weight: 600;
-        padding: .55rem 1.4rem;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-        transition: background .18s, transform .12s;
-        font-family: inherit;
-    }
-    .up-btn:active        { transform: scale(.97); }
-    .up-btn--cancel       { background: #F3F4F6; color: #374151; }
+    /* ── Footer ── */
+    .up-footer { padding: 1rem 1.5rem; display: flex; justify-content: flex-end; gap: .75rem; border-top: 1px solid var(--c-border); background: #FAFAFA; }
+    .up-btn { display: inline-flex; align-items: center; gap: .4rem; font-size: .875rem; font-weight: 600; padding: .55rem 1.4rem; border-radius: 6px; border: none; cursor: pointer; transition: background .18s, transform .12s; font-family: inherit; }
+    .up-btn:active { transform: scale(.97); }
+    .up-btn--cancel { background: #F3F4F6; color: #374151; }
     .up-btn--cancel:hover { background: #E5E7EB; }
-    .up-btn--save         { background: var(--c-success); color: #fff; }
-    .up-btn--save:hover   { background: #059669; }
+    .up-btn--save { background: var(--c-success); color: #fff; }
+    .up-btn--save:hover { background: #059669; }
+
+    /* ── Remove tab styles ── */
+    .rm-filters {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 1rem;
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--c-border);
+        align-items: end;
+    }
+    .rm-btn-filter {
+        display: inline-flex; align-items: center; gap: .4rem;
+        background: var(--c-brand); color: #fff;
+        font-size: .875rem; font-weight: 600;
+        padding: .52rem 1.2rem; border-radius: 6px; border: none;
+        cursor: pointer; font-family: inherit; transition: background .15s;
+        white-space: nowrap;
+    }
+    .rm-btn-filter:hover { background: #1e2f6b; }
+
+    .rm-table-wrap { padding: 1.5rem; }
+
+    .rm-table { width: 100%; border-collapse: separate; border-spacing: 0 .45rem; font-size: .875rem; }
+    .rm-table thead th {
+        font-size: .67rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .07em; color: var(--c-muted); padding: .5rem .75rem;
+        text-align: left; background: #F9FAFB;
+        border-top: 1px solid var(--c-border); border-bottom: 1px solid var(--c-border);
+    }
+    .rm-table thead th:first-child { border-left: 1px solid var(--c-border); border-radius: 6px 0 0 6px; }
+    .rm-table thead th:last-child  { border-right: 1px solid var(--c-border); border-radius: 0 6px 6px 0; }
+    .rm-table tbody tr { background: #fff; transition: background .12s; }
+    .rm-table tbody tr:hover { background: #FAFBFF; }
+    .rm-table tbody td { padding: .6rem .75rem; vertical-align: middle; border-top: 1px solid var(--c-border); border-bottom: 1px solid var(--c-border); }
+    .rm-table tbody td:first-child { border-left: 1px solid var(--c-border); border-radius: 6px 0 0 6px; }
+    .rm-table tbody td:last-child  { border-right: 1px solid var(--c-border); border-radius: 0 6px 6px 0; }
+
+    .rm-badge { display: inline-block; background: var(--c-brand-lt); color: var(--c-brand); font-size: .7rem; font-weight: 700; padding: .15rem .5rem; border-radius: 4px; }
+    .rm-stage { font-size: .75rem; background: #f0fdf4; color: #16a34a; padding: .15rem .5rem; border-radius: 4px; font-weight: 600; }
+
+    .rm-btn-del {
+        display: inline-flex; align-items: center; gap: .3rem;
+        background: var(--c-danger-lt); color: var(--c-danger);
+        border: 1px solid #FECACA; font-size: .75rem; font-weight: 600;
+        padding: .35rem .75rem; border-radius: 5px; cursor: pointer;
+        font-family: inherit; transition: background .15s;
+    }
+    .rm-btn-del:hover { background: #FEE2E2; }
+
+    .rm-empty { text-align: center; color: var(--c-muted); font-size: .85rem; padding: 3rem 0; }
+
+    .rm-link { font-size: .75rem; color: #2563EB; text-decoration: none; }
+    .rm-link:hover { text-decoration: underline; }
+
+    /* toast */
+    .up-toast {
+        position: fixed; bottom: 1.5rem; right: 1.5rem;
+        padding: .75rem 1.25rem; border-radius: 8px;
+        font-size: .85rem; font-weight: 600;
+        display: flex; align-items: center; gap: .5rem;
+        box-shadow: 0 4px 16px rgba(0,0,0,.12);
+        z-index: 9999; transition: opacity .3s;
+    }
+    .up-toast--success { background: var(--c-success-lt); color: #065F46; border: 1px solid #6EE7B7; }
+    .up-toast--error   { background: var(--c-danger-lt);  color: #991B1B; border: 1px solid #FECACA; }
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
 
 <div class="up-page">
-    <div class="up-card">
 
-        <div class="up-card__header">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0121 9.414V19a2 2 0 01-2 2z" />
+    @* ── Tabs ─────────────────────────────────────────────────────────────── *@
+    <div class="up-tabs">
+        <button class="up-tab @(activeTab == "upload" ? "active" : "")" onclick="switchTab('upload')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
-            <h2>Upload Question Paper</h2>
-        </div>
+            Upload Papers
+        </button>
+        <button class="up-tab @(activeTab == "remove" ? "active" : "")" onclick="switchTab('remove')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Remove Papers
+        </button>
+    </div>
 
-        @if (TempData["Success"] != null)
-        {
-            <div class="up-alert up-alert--success">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+    @* ══════════════════════════════════════════════════════════════════════
+       TAB 1 — UPLOAD
+    ══════════════════════════════════════════════════════════════════════ *@
+    <div class="up-tab-panel @(activeTab == "upload" ? "active" : "")" id="tab-upload">
+        <div class="up-card">
+            <div class="up-card__header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0121 9.414V19a2 2 0 01-2 2z" />
                 </svg>
-                @TempData["Success"]
-            </div>
-        }
-
-        @if (!ViewData.ModelState.IsValid)
-        {
-            <div class="up-validation-summary">
-                <strong>Please fix the following errors:</strong>
-                @Html.ValidationSummary(true)
-            </div>
-        }
-
-        @using (Html.BeginForm("Create", "Upload", FormMethod.Post, new { enctype = "multipart/form-data", id = "upForm" }))
-        {
-            @Html.AntiForgeryToken()
-
-            <div class="up-grid">
-
-                @* Department *@
-                <div class="up-field">
-                    <label class="up-label">Department <span class="req">*</span></label>
-                    @Html.DropDownListFor(m => m.DepartmentId,
-                        new SelectList(departments, "Id", "Name", Model.DepartmentId),
-                        "Select department",
-                        new { @class = "up-select", id = "deptSelect", onchange = "upLoadPosts(this.value)", required = "required" })
-                    @Html.ValidationMessageFor(m => m.DepartmentId, "", new { @class = "up-error" })
-                </div>
-
-                @* Post *@
-                <div class="up-field">
-                    <label class="up-label">Exam Post <span class="req">*</span></label>
-                    @Html.DropDownListFor(m => m.PostId,
-                        new SelectList(Enumerable.Empty<PostDto>(), "Id", "Name"),
-                        "Select post",
-                        new { @class = "up-select", id = "postSelect", disabled = "disabled", required = "required" })
-                    @Html.ValidationMessageFor(m => m.PostId, "", new { @class = "up-error" })
-                </div>
-
-                @* Year *@
-                <div class="up-field">
-                    <label class="up-label">Exam Year <span class="req">*</span></label>
-                    @Html.TextBoxFor(m => m.ExamYear,
-                        new { @class = "up-input", type = "number", min = "2000", max = "2100", placeholder = "e.g. 2024", required = "required" })
-                    @Html.ValidationMessageFor(m => m.ExamYear, "", new { @class = "up-error" })
-                </div>
-
-                @* Title *@
-                <div class="up-field">
-                    <label class="up-label">Exam Title <span class="req">*</span></label>
-                    @Html.TextBoxFor(m => m.Title,
-                        new { @class = "up-input", placeholder = "e.g. Sub Inspector (2024)", required = "required" })
-                    @Html.ValidationMessageFor(m => m.Title, "", new { @class = "up-error" })
-                </div>
-
-                @* Number of papers *@
-                <div class="up-field">
-                    <label class="up-label">Number of Papers <span class="req">*</span></label>
-                    @Html.DropDownListFor(m => m.NumSubjects,
-                        new SelectList(
-                            Enumerable.Range(1, 10).Select(n => new { Value = n, Text = n + (n > 1 ? " Papers" : " Paper") }),
-                            "Value", "Text", Model.NumSubjects),
-                        "Select count",
-                        new { @class = "up-select", id = "numPapersSelect", onchange = "upGenerateRows()", required = "required" })
-                    @Html.ValidationMessageFor(m => m.NumSubjects, "", new { @class = "up-error" })
-                </div>
-
+                <h2>Upload Question Paper</h2>
             </div>
 
-            <hr class="up-divider" />
-
-            <div class="up-papers-section" id="upPapersSection" style="display:none;">
-                <h3 id="upSectionTitle"></h3>
-                <div class="up-table-wrap">
-                    <table class="up-table">
-                        <thead>
-                            <tr>
-                                <th style="width:54px">#</th>
-                                <th>Paper / Subject Name</th>
-                                <th style="width:170px">Phase (Stage)</th>
-                                <th style="width:170px; text-align:center">Upload PDF</th>
-                            </tr>
-                        </thead>
-                        <tbody id="upRowsBody"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="up-footer">
-                <button type="button" class="up-btn up-btn--cancel" onclick="history.back()">Cancel</button>
-                <button type="submit" class="up-btn up-btn--save">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            @if (TempData["Success"] != null)
+            {
+                <div class="up-alert up-alert--success">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
-                    Save Papers
+                    @TempData["Success"]
+                </div>
+            }
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="up-validation-summary">
+                    <strong>Please fix the following errors:</strong>
+                    @Html.ValidationSummary(true)
+                </div>
+            }
+
+            @using (Html.BeginForm("Create", "Upload", FormMethod.Post, new { enctype = "multipart/form-data", id = "upForm" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="up-grid">
+                    <div class="up-field">
+                        <label class="up-label">Department <span class="req">*</span></label>
+                        @Html.DropDownListFor(m => m.DepartmentId,
+                            new SelectList(departments, "Id", "Name", Model.DepartmentId),
+                            "Select department",
+                            new { @class = "up-select", id = "deptSelect", onchange = "upLoadPosts(this.value)", required = "required" })
+                        @Html.ValidationMessageFor(m => m.DepartmentId, "", new { @class = "up-error" })
+                    </div>
+                    <div class="up-field">
+                        <label class="up-label">Exam Post <span class="req">*</span></label>
+                        @Html.DropDownListFor(m => m.PostId,
+                            new SelectList(Enumerable.Empty<PostDto>(), "Id", "Name"),
+                            "Select post",
+                            new { @class = "up-select", id = "postSelect", disabled = "disabled", required = "required" })
+                        @Html.ValidationMessageFor(m => m.PostId, "", new { @class = "up-error" })
+                    </div>
+                    <div class="up-field">
+                        <label class="up-label">Exam Year <span class="req">*</span></label>
+                        @Html.TextBoxFor(m => m.ExamYear,
+                            new { @class = "up-input", type = "number", min = "2000", max = "2100", placeholder = "e.g. 2024", required = "required" })
+                        @Html.ValidationMessageFor(m => m.ExamYear, "", new { @class = "up-error" })
+                    </div>
+                    <div class="up-field">
+                        <label class="up-label">Paper Title <span class="req">*</span></label>
+                        @Html.TextBoxFor(m => m.Title,
+                            new { @class = "up-input", placeholder = "e.g. Prelims 2024", required = "required" })
+                        @Html.ValidationMessageFor(m => m.Title, "", new { @class = "up-error" })
+                    </div>
+                    <div class="up-field">
+                        <label class="up-label">Number of Papers <span class="req">*</span></label>
+                        @Html.DropDownListFor(m => m.NumSubjects,
+                            new SelectList(
+                                Enumerable.Range(1, 10).Select(n => new { Value = n, Text = n + (n > 1 ? " Papers" : " Paper") }),
+                                "Value", "Text", Model.NumSubjects),
+                            "Select count",
+                            new { @class = "up-select", id = "numPapersSelect", onchange = "upGenerateRows()", required = "required" })
+                        @Html.ValidationMessageFor(m => m.NumSubjects, "", new { @class = "up-error" })
+                    </div>
+                </div>
+
+                <hr class="up-divider" />
+
+                <div class="up-papers-section" id="upPapersSection" style="display:none;">
+                    <h3 id="upSectionTitle"></h3>
+                    <div class="up-table-wrap">
+                        <table class="up-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:54px">#</th>
+                                    <th>Paper / Subject Name</th>
+                                    <th style="width:170px">Phase (Stage)</th>
+                                    <th style="width:170px; text-align:center">Upload PDF</th>
+                                </tr>
+                            </thead>
+                            <tbody id="upRowsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="up-footer">
+                    <button type="button" class="up-btn up-btn--cancel" onclick="history.back()">Cancel</button>
+                    <button type="submit" class="up-btn up-btn--save">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Save Papers
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+
+    @* ══════════════════════════════════════════════════════════════════════
+       TAB 2 — REMOVE
+    ══════════════════════════════════════════════════════════════════════ *@
+    <div class="up-tab-panel @(activeTab == "remove" ? "active" : "")" id="tab-remove">
+        <div class="up-card">
+            <div class="up-card__header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <h2>Remove Papers</h2>
+            </div>
+
+            <div class="rm-filters">
+                <div class="up-field">
+                    <label class="up-label">Filter by Department</label>
+                    <select class="up-select" id="rmDeptSelect" onchange="rmLoadPosts(this.value)">
+                        <option value="">All Departments</option>
+                        @foreach (var dept in departments)
+                        {
+                            <option value="@dept.Id">@dept.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="up-field">
+                    <label class="up-label">Filter by Post</label>
+                    <select class="up-select" id="rmPostSelect">
+                        <option value="">All Posts</option>
+                    </select>
+                </div>
+                <button class="rm-btn-filter" onclick="rmLoadPapers()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+                    </svg>
+                    Filter
                 </button>
             </div>
-        }
 
+            <div class="rm-table-wrap">
+                <div id="rmContent">
+                    <div class="rm-empty">Select filters and click Filter to load papers.</div>
+                </div>
+            </div>
+        </div>
     </div>
+
 </div>
+
+@* Toast notification *@
+<div id="upToast" class="up-toast up-toast--success" style="display:none;"></div>
 
 @section Scripts {
     <script>
         (function () {
             'use strict';
 
-            var STAGE_OPTIONS = '@Html.Raw(stageOptionsHtml)';
+            var STAGE_OPTIONS  = '@Html.Raw(stageOptionsHtml)';
+            var ANTIFORGERY_TOKEN = '@Html.AntiForgeryToken()'.replace(/.*value="([^"]+)".*/,'$1');
 
-            // ── Load posts for selected department ───────────────────────
+            // ── Tab switching ─────────────────────────────────────────────────────
+            function switchTab(tab) {
+                document.querySelectorAll('.up-tab').forEach(function(t) { t.classList.remove('active'); });
+                document.querySelectorAll('.up-tab-panel').forEach(function(p) { p.classList.remove('active'); });
+                document.getElementById('tab-' + tab).classList.add('active');
+                document.querySelectorAll('.up-tab')[tab === 'upload' ? 0 : 1].classList.add('active');
+                if (tab === 'remove') rmLoadPapers();
+            }
+
+            // ── Upload tab: load posts ────────────────────────────────────────────
             function upLoadPosts(deptId) {
                 var sel = document.getElementById('postSelect');
                 sel.innerHTML = '<option value="">Select post</option>';
                 sel.disabled = true;
                 if (!deptId) return;
-
                 fetch('/api/papers/posts?departmentId=' + encodeURIComponent(deptId))
-                    .then(function (r) { return r.json(); })
-                    .then(function (data) {
-                        data.forEach(function (p) {
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        data.forEach(function(p) {
                             var opt = document.createElement('option');
-                            opt.value = p.id;
-                            opt.textContent = p.name;
+                            opt.value = p.id; opt.textContent = p.name;
                             sel.appendChild(opt);
                         });
                         sel.disabled = false;
-                    })
-                    .catch(function (e) { console.error('Posts load failed:', e); });
+                    });
             }
 
-            // ── Generate table rows ──────────────────────────────────────
+            // ── Upload tab: generate rows ─────────────────────────────────────────
             function upGenerateRows() {
                 var num     = parseInt(document.getElementById('numPapersSelect').value, 10);
                 var section = document.getElementById('upPapersSection');
                 var title   = document.getElementById('upSectionTitle');
                 var tbody   = document.getElementById('upRowsBody');
-
                 if (!num) { section.style.display = 'none'; return; }
-
                 title.textContent = num + ' Paper' + (num > 1 ? 's' : '') + ' — Configuration';
                 section.style.display = 'block';
                 tbody.innerHTML = '';
-
                 for (var i = 0; i < num; i++) {
                     var sl = ('0' + (i + 1)).slice(-2);
                     var tr = document.createElement('tr');
                     tr.className = 'up-row';
                     tr.innerHTML =
                         '<td><div class="up-serial">' + sl + '</div></td>' +
-                        '<td>' +
-                            '<input type="text" name="SubjectPapers[' + i + '].SubjectName"' +
-                            ' class="up-input" placeholder="e.g. General Studies Paper I" required />' +
-                        '</td>' +
-                        '<td>' +
-                            '<select name="SubjectPapers[' + i + '].StageId" class="up-select" required>' +
-                                '<option value="">Select phase</option>' + STAGE_OPTIONS +
-                            '</select>' +
-                        '</td>' +
-                        '<td style="text-align:center">' +
-                            '<label class="up-upload-btn" id="up-label-' + i + '">' +
-                                '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none"' +
-                                ' viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">' +
-                                    '<path stroke-linecap="round" stroke-linejoin="round"' +
-                                    ' d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>' +
-                                '</svg>' +
-                                '<span id="up-span-' + i + '">Upload PDF</span>' +
-                                '<input type="file" name="SubjectPapers[' + i + '].PdfFile"' +
-                                ' accept=".pdf" style="display:none"' +
-                                ' onchange="upHandleFile(event,' + i + ')" required />' +
-                            '</label>' +
-                        '</td>';
+                        '<td><input type="text" name="SubjectPapers[' + i + '].SubjectName" class="up-input" placeholder="Enter paper name..." required /></td>' +
+                        '<td><select name="SubjectPapers[' + i + '].StageId" class="up-select" required><option value="">Select phase</option>' + STAGE_OPTIONS + '</select></td>' +
+                        '<td style="text-align:center"><label class="up-upload-btn" id="up-label-' + i + '">' +
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>' +
+                        '<span id="up-span-' + i + '">Upload PDF</span>' +
+                        '<input type="file" name="SubjectPapers[' + i + '].PdfFile" accept=".pdf" style="display:none" onchange="upHandleFile(event,' + i + ')" required /></label></td>';
                     tbody.appendChild(tr);
                 }
             }
 
-            // ── Update label after file chosen ───────────────────────────
             function upHandleFile(event, idx) {
-                var file  = event.target.files[0];
-                var label = document.getElementById('up-label-' + idx);
-                var span  = document.getElementById('up-span-' + idx);
+                var file = event.target.files[0];
                 if (!file) return;
-                span.textContent = file.name.length > 22
-                    ? file.name.substring(0, 22) + '...'
-                    : file.name;
-                label.classList.add('ok');
+                document.getElementById('up-span-' + idx).textContent =
+                    file.name.length > 22 ? file.name.substring(0, 22) + '...' : file.name;
+                document.getElementById('up-label-' + idx).classList.add('ok');
             }
 
-            // ── Expose to inline handlers ────────────────────────────────
+            // ── Remove tab: load posts for filter ─────────────────────────────────
+            function rmLoadPosts(deptId) {
+                var sel = document.getElementById('rmPostSelect');
+                sel.innerHTML = '<option value="">All Posts</option>';
+                if (!deptId) return;
+                fetch('/api/papers/posts?departmentId=' + encodeURIComponent(deptId))
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        data.forEach(function(p) {
+                            var opt = document.createElement('option');
+                            opt.value = p.id; opt.textContent = p.name;
+                            sel.appendChild(opt);
+                        });
+                    });
+            }
+
+            // ── Remove tab: load papers ───────────────────────────────────────────
+            function rmLoadPapers() {
+                var deptId = document.getElementById('rmDeptSelect').value;
+                var postId = document.getElementById('rmPostSelect').value;
+                var url    = '/Upload/Papers?';
+                if (deptId) url += 'departmentId=' + deptId + '&';
+                if (postId) url += 'postId=' + postId;
+
+                document.getElementById('rmContent').innerHTML =
+                    '<div class="rm-empty">Loading...</div>';
+
+                fetch(url)
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) { renderPapersTable(data); })
+                    .catch(function() {
+                        document.getElementById('rmContent').innerHTML =
+                            '<div class="rm-empty">Failed to load papers.</div>';
+                    });
+            }
+
+            function renderPapersTable(data) {
+                if (!data || data.length === 0) {
+                    document.getElementById('rmContent').innerHTML =
+                        '<div class="rm-empty">No papers found for the selected filters.</div>';
+                    return;
+                }
+
+                var html = '<table class="rm-table"><thead><tr>' +
+                    '<th style="width:48px">#</th>' +
+                    '<th>Paper Title</th>' +
+                    '<th>Subject</th>' +
+                    '<th>Stage</th>' +
+                    '<th>Year</th>' +
+                    '<th>Department</th>' +
+                    '<th>Post</th>' +
+                    '<th style="width:90px; text-align:center">Action</th>' +
+                    '</tr></thead><tbody>';
+
+                data.forEach(function(p, i) {
+                    html += '<tr id="rm-row-' + p.id + '">' +
+                        '<td><span class="rm-badge">' + (i + 1) + '</span></td>' +
+                        '<td style="font-weight:600">' + escHtml(p.title) + '</td>' +
+                        '<td>' + escHtml(p.subjectName) + '</td>' +
+                        '<td><span class="rm-stage">' + escHtml(p.stageName) + '</span></td>' +
+                        '<td>' + p.year + '</td>' +
+                        '<td style="font-size:.8rem;color:var(--c-muted)">' + escHtml(p.department || '-') + '</td>' +
+                        '<td style="font-size:.8rem;color:var(--c-muted)">' + escHtml(p.post || '-') + '</td>' +
+                        '<td style="text-align:center">' +
+                        '<button class="rm-btn-del" onclick="rmDeletePaper(' + p.id + ', \'' + escHtml(p.subjectName) + '\')">' +
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
+                        'Delete</button></td></tr>';
+                });
+
+                html += '</tbody></table>';
+                document.getElementById('rmContent').innerHTML = html;
+            }
+
+            // ── Delete paper ──────────────────────────────────────────────────────
+            function rmDeletePaper(id, name) {
+                if (!confirm('Delete "' + name + '"? This will also remove it from Cloudflare R2.')) return;
+
+                // Get antiforgery token from the upload form
+                var token = document.querySelector('#upForm input[name="__RequestVerificationToken"]').value;
+
+                fetch('/Upload/DeletePaper', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': token
+                    },
+                    body: 'id=' + id
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(res) {
+                    if (res.success) {
+                        var row = document.getElementById('rm-row-' + id);
+                        if (row) row.remove();
+                        showToast(res.message, 'success');
+                    } else {
+                        showToast(res.message, 'error');
+                    }
+                })
+                .catch(function() { showToast('Delete failed. Please try again.', 'error'); });
+            }
+
+            // ── Toast ─────────────────────────────────────────────────────────────
+            function showToast(msg, type) {
+                var t = document.getElementById('upToast');
+                t.textContent = msg;
+                t.className = 'up-toast up-toast--' + type;
+                t.style.display = 'flex';
+                setTimeout(function() { t.style.opacity = '0'; }, 2500);
+                setTimeout(function() { t.style.display = 'none'; t.style.opacity = '1'; }, 2900);
+            }
+
+            function escHtml(str) {
+                return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            }
+
+            // ── Expose ────────────────────────────────────────────────────────────
+            window.switchTab      = switchTab;
             window.upLoadPosts    = upLoadPosts;
             window.upGenerateRows = upGenerateRows;
             window.upHandleFile   = upHandleFile;
+            window.rmLoadPosts    = rmLoadPosts;
+            window.rmLoadPapers   = rmLoadPapers;
+            window.rmDeletePaper  = rmDeletePaper;
 
-            // ── Restore state on validation failure ──────────────────────
+            // ── Restore state on load ─────────────────────────────────────────────
             document.addEventListener('DOMContentLoaded', function () {
                 var numEl  = document.getElementById('numPapersSelect');
                 var deptEl = document.getElementById('deptSelect');
