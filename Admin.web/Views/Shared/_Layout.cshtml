@@ -33,10 +33,10 @@
             <a class="nav-link @(ViewData["Title"]?.ToString() == "Overview" ? "active" : "")" href="/">
                 <i class="bi bi-house-door"></i> Overview
             </a>
-            <a class="nav-link @(ViewData["Title"]?.ToString() == "Upload Question Paper" ? "active" : "")" href="/Upload">
+            <a class="nav-link @(ViewData["Title"]?.ToString() == "Upload Question Paper" ? "active" : "")" href="/Upload/index">
                 <i class="bi bi-file-earmark-plus"></i> Manage Paper
             </a>
-            <a class="nav-link @(ViewData["Title"]?.ToString() == "Manage Departments & Posts" ? "active" : "")" href="/DepartmentPost">
+            <a class="nav-link @(ViewData["Title"]?.ToString() == "Manage Departments & Posts" ? "active" : "")" href="/DepartmentPost/index">
                 <i class="bi bi-gear"></i> Master Settings
             </a>
            
@@ -47,8 +47,10 @@
         <div class="top-navbar">
             <div class="top-nav-items">
                 <span class="badge bg-light text-dark border"><i class="bi bi-person"></i> Admin Panel</span>
-                <a href="#" class="text-decoration-none text-dark">My Profile</a>
-                <a href="#" class="text-decoration-none text-dark">Logout</a>
+                <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+                </form>
             </div>
         </div>
 

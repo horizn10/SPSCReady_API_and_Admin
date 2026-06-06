@@ -3,9 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using SPSCReady.Admin.Models;
 using SPSCReady.Domain.Entities;
 using SPSCReady.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SPSCReady.Admin.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class DepartmentPostController : Controller
     {
         private readonly ApplicationDbContext _db;

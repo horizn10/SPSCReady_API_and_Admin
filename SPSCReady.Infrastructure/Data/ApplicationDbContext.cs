@@ -29,6 +29,9 @@ namespace SPSCReady.Infrastructure.Data
         // OTP Module DbSet
         public DbSet<OtpToken> OtpTokens { get; set; }
 
+        // ── Admin Panel ───────────────────────────────────────────────────────
+        public DbSet<AdminUser> AdminUsers { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -113,6 +116,16 @@ namespace SPSCReady.Infrastructure.Data
                 .WithMany()
                 .HasForeignKey(s => s.SubjectId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // ── AdminUser ─────────────────────────────────────────────────────
+            builder.Entity<AdminUser>(entity =>
+            {
+                entity.HasKey(a => a.Id);
+                entity.Property(a => a.Username).HasMaxLength(50).IsRequired();
+                entity.Property(a => a.PasswordHash).IsRequired();
+                entity.Property(a => a.FullName).HasMaxLength(100).IsRequired();
+                entity.HasIndex(a => a.Username).IsUnique();
+            });
         }
     }
 }
